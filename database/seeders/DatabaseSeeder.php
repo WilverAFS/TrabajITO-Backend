@@ -24,6 +24,11 @@ class DatabaseSeeder extends Seeder
             TipoPublicacionSeeder::class,
             EstadoReporteSeeder::class,
             TipoNotificacionSeeder::class,
+
+            //Usuarios y datos relacionados
+            UsuarioSeeder::class,
+            PerfilProfesionalSeeder::class,
+            DatosPruebaSeeder::class,
         ]);
     }
 }
