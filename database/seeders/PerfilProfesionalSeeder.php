@@ -40,29 +40,27 @@ class PerfilProfesionalSeeder extends Seeder
             );
 
             /*
-             * Asociaciones con oficios.
-             *
+             * Asociaciones con oficios (Tabla pivote).
              * Perfil 1: Electricidad y refrigeración.
              * Perfil 2: Plomería.
+             * 
+             * Se utiliza insertOrIgnore() para generar "ON CONFLICT DO NOTHING"
+             * y permitir la reejecución segura del seeder en PostgreSQL.
              */
-            DB::table('perfil_oficio')->upsert(
+            DB::table('perfil_oficio')->insertOrIgnore([
                 [
-                    [
-                        'id_trabajador' => 1,
-                        'id_oficio' => 2,
-                    ],
-                    [
-                        'id_trabajador' => 1,
-                        'id_oficio' => 8,
-                    ],
-                    [
-                        'id_trabajador' => 2,
-                        'id_oficio' => 1,
-                    ],
+                    'id_trabajador' => 1,
+                    'id_oficio' => 2,
                 ],
-                ['id_trabajador', 'id_oficio'],
-                []
-            );
+                [
+                    'id_trabajador' => 1,
+                    'id_oficio' => 8,
+                ],
+                [
+                    'id_trabajador' => 2,
+                    'id_oficio' => 1,
+                ],
+            ]);
 
             /*
              * Disponibilidades.
