@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -20,6 +21,8 @@ class Evidencia extends Model
         'fecha_carga',
     ];
 
+    protected $hidden = [];
+
     protected function casts(): array
     {
         return [
@@ -27,6 +30,29 @@ class Evidencia extends Model
         ];
     }
 
+    /**
+     * Scope para consultar evidencias de una publicación.
+     */
+    public function scopeDePublicacion(
+        Builder $query,
+        int $idPublicacion
+    ): Builder {
+        return $query->where('id_publicacion', $idPublicacion);
+    }
+
+    /**
+     * Scope para consultar evidencias por tipo de archivo.
+     */
+    public function scopeDeTipoArchivo(
+        Builder $query,
+        string $tipo
+    ): Builder {
+        return $query->where('tipo_archivo', strtoupper($tipo));
+    }
+
+    /**
+     * Relación con la publicación a la que pertenece la evidencia.
+     */
     public function publicacion(): BelongsTo
     {
         return $this->belongsTo(

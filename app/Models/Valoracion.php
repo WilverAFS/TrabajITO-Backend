@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -21,6 +22,8 @@ class Valoracion extends Model
         'fecha_valoracion',
     ];
 
+    protected $hidden = [];
+
     protected function casts(): array
     {
         return [
@@ -29,6 +32,29 @@ class Valoracion extends Model
         ];
     }
 
+    /**
+     * Scope para consultar valoraciones de una publicación.
+     */
+    public function scopeDePublicacion(
+        Builder $query,
+        int $idPublicacion
+    ): Builder {
+        return $query->where('id_publicacion', $idPublicacion);
+    }
+
+    /**
+     * Scope para filtrar valoraciones por calificación.
+     */
+    public function scopeConCalificacion(
+        Builder $query,
+        int $calificacion
+    ): Builder {
+        return $query->where('calificacion', $calificacion);
+    }
+
+    /**
+     * Relación con la publicación valorada.
+     */
     public function publicacion(): BelongsTo
     {
         return $this->belongsTo(
@@ -38,6 +64,9 @@ class Valoracion extends Model
         );
     }
 
+    /**
+     * Relación con el cliente que realizó la valoración.
+     */
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(

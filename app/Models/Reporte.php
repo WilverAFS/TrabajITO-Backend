@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -26,6 +27,8 @@ class Reporte extends Model
         'fecha_resolucion',
     ];
 
+    protected $hidden = [];
+
     protected function casts(): array
     {
         return [
@@ -35,6 +38,29 @@ class Reporte extends Model
         ];
     }
 
+    /**
+     * Scope para consultar reportes por estado.
+     */
+    public function scopeDeEstado(
+        Builder $query,
+        int $idEstado
+    ): Builder {
+        return $query->where('id_estado_reporte', $idEstado);
+    }
+
+    /**
+     * Scope para consultar reportes por tipo de objetivo.
+     */
+    public function scopeDeTipoObjetivo(
+        Builder $query,
+        string $tipo
+    ): Builder {
+        return $query->where('tipo_objetivo', strtoupper($tipo));
+    }
+
+    /**
+     * Relación con el usuario que realizó el reporte.
+     */
     public function denunciante(): BelongsTo
     {
         return $this->belongsTo(
@@ -44,6 +70,9 @@ class Reporte extends Model
         );
     }
 
+    /**
+     * Relación con el administrador moderador.
+     */
     public function moderador(): BelongsTo
     {
         return $this->belongsTo(
@@ -53,6 +82,9 @@ class Reporte extends Model
         );
     }
 
+    /**
+     * Relación con el estado del reporte.
+     */
     public function estado(): BelongsTo
     {
         return $this->belongsTo(
@@ -62,3 +94,4 @@ class Reporte extends Model
         );
     }
 }
+

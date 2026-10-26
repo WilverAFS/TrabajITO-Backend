@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,6 +24,8 @@ class Contratacion extends Model
         'fecha_finalizacion',
     ];
 
+    protected $hidden = [];
+
     protected function casts(): array
     {
         return [
@@ -32,6 +35,29 @@ class Contratacion extends Model
         ];
     }
 
+    /**
+     * Scope para consultar contrataciones por estado.
+     */
+    public function scopeDeEstado(
+        Builder $query,
+        int $idEstado
+    ): Builder {
+        return $query->where('id_estado_contratacion', $idEstado);
+    }
+
+    /**
+     * Scope para consultar las contrataciones de un cliente.
+     */
+    public function scopeDeCliente(
+        Builder $query,
+        int $idCliente
+    ): Builder {
+        return $query->where('id_cliente', $idCliente);
+    }
+
+    /**
+     * Relación con el estado de la contratación.
+     */
     public function estado(): BelongsTo
     {
         return $this->belongsTo(
@@ -41,6 +67,9 @@ class Contratacion extends Model
         );
     }
 
+    /**
+     * Relación con el cliente.
+     */
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(
@@ -50,6 +79,9 @@ class Contratacion extends Model
         );
     }
 
+    /**
+     * Relación con el trabajador.
+     */
     public function trabajador(): BelongsTo
     {
         return $this->belongsTo(
