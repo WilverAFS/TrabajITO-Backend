@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Contratacion extends Model
 {
@@ -35,9 +36,6 @@ class Contratacion extends Model
         ];
     }
 
-    /**
-     * Scope para consultar contrataciones por estado.
-     */
     public function scopeDeEstado(
         Builder $query,
         int $idEstado
@@ -45,9 +43,6 @@ class Contratacion extends Model
         return $query->where('id_estado_contratacion', $idEstado);
     }
 
-    /**
-     * Scope para consultar las contrataciones de un cliente.
-     */
     public function scopeDeCliente(
         Builder $query,
         int $idCliente
@@ -55,9 +50,6 @@ class Contratacion extends Model
         return $query->where('id_cliente', $idCliente);
     }
 
-    /**
-     * Relación con el estado de la contratación.
-     */
     public function estado(): BelongsTo
     {
         return $this->belongsTo(
@@ -67,9 +59,6 @@ class Contratacion extends Model
         );
     }
 
-    /**
-     * Relación con el cliente.
-     */
     public function cliente(): BelongsTo
     {
         return $this->belongsTo(
@@ -79,15 +68,24 @@ class Contratacion extends Model
         );
     }
 
-    /**
-     * Relación con el trabajador.
-     */
     public function trabajador(): BelongsTo
     {
         return $this->belongsTo(
             PerfilProfesional::class,
             'id_trabajador',
             'id_trabajador'
+        );
+    }
+
+    /**
+     * Relación inversa: una contratación puede tener una publicación.
+     */
+    public function publicacion(): HasOne
+    {
+        return $this->hasOne(
+            Publicacion::class,
+            'id_contratacion',
+            'id_contratacion'
         );
     }
 }
