@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Resources\Api\V1\UsuarioLoginResource;
+use App\Http\Resources\Api\V1\UsuarioAutenticadoResource;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -97,6 +99,17 @@ class AuthController extends Controller
                     ->resolve($request),
                 'token' => $token,
             ],
+        ], 200);
+    }
+    public function me(Request $request): JsonResponse
+    {
+        $usuario = $request->user();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Usuario autenticado obtenido correctamente.',
+            'data' => UsuarioAutenticadoResource::make($usuario)
+                ->resolve($request),
         ], 200);
     }
 }
