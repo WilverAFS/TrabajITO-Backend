@@ -1,0 +1,451 @@
+{
+  "info": {
+    "_postman_id": "3d2e45ed-4078-4f9e-89be-796ec440f2d2",
+    "name": "TrabajITO - API de Autenticación",
+    "description": "Ejecutar las siete solicitudes en orden desde Collection Runner. Comprueba registro, correo duplicado, credenciales incorrectas, login, GET /me, logout y rechazo del token revocado. Usa un correo único en cada ejecución.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56286288",
+    "_collection_link": "https://go.postman.co/collection/56286288-3d2e45ed-4078-4f9e-89be-796ec440f2d2?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "01 - Registrar usuario",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const suffix = Date.now().toString() + \".\" + Math.random().toString(36).slice(2, 8);",
+              "pm.collectionVariables.set(\"testEmail\", \"postman.\" + suffix + \"@example.test\");",
+              "pm.collectionVariables.set(\"testPassword\", \"Prueba123!\");",
+              "pm.collectionVariables.set(\"testNombre\", \"Postman\");",
+              "pm.collectionVariables.set(\"testApellido\", \"Autenticacion\");",
+              "pm.collectionVariables.unset(\"authToken\");",
+              "pm.collectionVariables.unset(\"revokedToken\");",
+              "pm.collectionVariables.unset(\"registrationToken\");",
+              "pm.collectionVariables.unset(\"registeredUserId\");"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "const b = pm.response.json();",
+              "pm.test(\"Registro exitoso\", () => pm.expect(b.success).to.eql(true));",
+              "pm.test(\"Correo coincide\", () => pm.expect(b.data.usuario.correo).to.eql(pm.collectionVariables.get(\"testEmail\")));",
+              "pm.test(\"Token generado\", () => pm.expect(b.data.token).to.be.a(\"string\").and.not.empty);",
+              "pm.test(\"No expone contrasena_hash\", () => pm.expect(b.data.usuario).to.not.have.property(\"contrasena_hash\"));",
+              "pm.collectionVariables.set(\"registrationToken\", b.data.token);",
+              "pm.collectionVariables.set(\"registeredUserId\", String(b.data.usuario.id_usuario));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"{{testNombre}}\",\n  \"apellido\": \"{{testApellido}}\",\n  \"correo\": \"{{testEmail}}\",\n  \"telefono\": null,\n  \"password\": \"{{testPassword}}\",\n  \"password_confirmation\": \"{{testPassword}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "register"
+          ]
+        },
+        "description": "Genera un correo único, registra el usuario y guarda su ID."
+      },
+      "response": []
+    },
+    {
+      "name": "02 - Rechazar correo duplicado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Correo duplicado responde HTTP 422\", () => pm.response.to.have.status(422));",
+              "const b = pm.response.json();",
+              "pm.test(\"Error de validacion\", () => {",
+              "  pm.expect(b.success).to.eql(false);",
+              "  pm.expect(b.error_code).to.eql(\"VALIDATION_ERROR\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"{{testNombre}}\",\n  \"apellido\": \"{{testApellido}}\",\n  \"correo\": \"{{testEmail}}\",\n  \"telefono\": null,\n  \"password\": \"{{testPassword}}\",\n  \"password_confirmation\": \"{{testPassword}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "register"
+          ]
+        },
+        "description": "Reutiliza el correo registrado; debe responder HTTP 422."
+      },
+      "response": []
+    },
+    {
+      "name": "03 - Rechazar contraseña incorrecta",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Credenciales incorrectas responden HTTP 401\", () => pm.response.to.have.status(401));",
+              "const b = pm.response.json();",
+              "pm.test(\"Código INVALID_CREDENTIALS\", () => {",
+              "  pm.expect(b.success).to.eql(false);",
+              "  pm.expect(b.error_code).to.eql(\"INVALID_CREDENTIALS\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"correo\": \"{{testEmail}}\",\n  \"password\": \"Incorrecta123!\",\n  \"device_name\": \"TrabajITO Postman Tests\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Debe responder HTTP 401 con INVALID_CREDENTIALS."
+      },
+      "response": []
+    },
+    {
+      "name": "04 - Iniciar sesión",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Inicio de sesión responde HTTP 200\", () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test(\"Inicio exitoso y correo correcto\", () => {",
+              "  pm.expect(b.success).to.eql(true);",
+              "  pm.expect(b.data.usuario.correo).to.eql(pm.collectionVariables.get(\"testEmail\"));",
+              "});",
+              "pm.test(\"Token generado\", () => pm.expect(b.data.token).to.be.a(\"string\").and.not.empty);",
+              "pm.collectionVariables.set(\"authToken\", b.data.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"correo\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"device_name\": \"TrabajITO Postman Tests\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Obtiene y guarda un token de Sanctum."
+      },
+      "response": []
+    },
+    {
+      "name": "05 - Consultar usuario autenticado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"GET /me responde HTTP 200\", () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test(\"Usuario autenticado correcto\", () => {",
+              "  pm.expect(b.success).to.eql(true);",
+              "  pm.expect(b.data.correo).to.eql(pm.collectionVariables.get(\"testEmail\"));",
+              "  pm.expect(String(b.data.id_usuario)).to.eql(pm.collectionVariables.get(\"registeredUserId\"));",
+              "});",
+              "pm.test(\"Incluye indicadores de perfil\", () => {",
+              "  pm.expect(b.data).to.have.property(\"tiene_perfil_profesional\");",
+              "  pm.expect(b.data).to.have.property(\"es_trabajador_habilitado\");",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{authToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "me"
+          ]
+        },
+        "description": "Consulta los datos públicos con el Bearer token."
+      },
+      "response": []
+    },
+    {
+      "name": "06 - Cerrar sesión",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Cierre de sesión responde HTTP 200\", () => pm.response.to.have.status(200));",
+              "const b = pm.response.json();",
+              "pm.test(\"Sesión cerrada y token revocado\", () => {",
+              "  pm.expect(b.success).to.eql(true);",
+              "  pm.expect(b.message).to.eql(\"Sesión cerrada correctamente.\");",
+              "  pm.expect(b.data).to.eql(null);",
+              "});",
+              "pm.collectionVariables.set(\"revokedToken\", pm.collectionVariables.get(\"authToken\"));",
+              "pm.collectionVariables.unset(\"authToken\");"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{authToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/logout",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "logout"
+          ]
+        },
+        "description": "Revoca el token actual y lo conserva para la última prueba."
+      },
+      "response": []
+    },
+    {
+      "name": "07 - Rechazar token revocado",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Token revocado responde HTTP 401\", () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{revokedToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "me"
+          ]
+        },
+        "description": "Debe responder HTTP 401 después del logout."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000/api/v1"
+    },
+    {
+      "key": "testEmail",
+      "value": ""
+    },
+    {
+      "key": "testPassword",
+      "value": "Prueba123!"
+    },
+    {
+      "key": "testNombre",
+      "value": "Postman"
+    },
+    {
+      "key": "testApellido",
+      "value": "Autenticacion"
+    },
+    {
+      "key": "registrationToken",
+      "value": ""
+    },
+    {
+      "key": "registeredUserId",
+      "value": ""
+    },
+    {
+      "key": "revokedToken",
+      "value": ""
+    }
+  ]
+}
