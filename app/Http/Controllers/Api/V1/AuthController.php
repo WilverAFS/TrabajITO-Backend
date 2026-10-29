@@ -101,6 +101,8 @@ class AuthController extends Controller
             ],
         ], 200);
     }
+
+    // Obtener el usuario autenticado
     public function me(Request $request): JsonResponse
     {
         $usuario = $request->user();
@@ -110,6 +112,18 @@ class AuthController extends Controller
             'message' => 'Usuario autenticado obtenido correctamente.',
             'data' => UsuarioAutenticadoResource::make($usuario)
                 ->resolve($request),
+        ], 200);
+    }
+
+    // Cerrar sesion del usuario autenticado
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Sesión cerrada correctamente.',
+            'data' => null,
         ], 200);
     }
 }

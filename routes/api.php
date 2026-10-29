@@ -14,5 +14,6 @@ Route::prefix('v1')->group(function () {
     )->middleware('throttle:5,1');
     Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
     });
 });
