@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
@@ -91,7 +92,8 @@ class CatalogoController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'No estás autenticado.',
-                'data' => null,
+                'error_code' => 'UNAUTHENTICATED',
+                'errors' => null,
             ], 401);
         }
 
@@ -104,7 +106,8 @@ class CatalogoController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'No tienes un perfil profesional habilitado.',
-                'data' => null,
+                'error_code' => 'PROFILE_NOT_ENABLED',
+                'errors' => null,
             ], 403);
         }
 

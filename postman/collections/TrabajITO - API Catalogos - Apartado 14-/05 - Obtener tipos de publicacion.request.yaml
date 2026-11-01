@@ -1,0 +1,8 @@
+﻿$kind: http-request
+url: http://127.0.0.1:8000/api/v1/tipos-publicacion
+method: GET
+headers:
+  Authorization: Bearer {{authToken}}
+  Accept: application/json
+examples: .resources/05 - Obtener tipos de publicacion.resources/examples
+order: 5000
