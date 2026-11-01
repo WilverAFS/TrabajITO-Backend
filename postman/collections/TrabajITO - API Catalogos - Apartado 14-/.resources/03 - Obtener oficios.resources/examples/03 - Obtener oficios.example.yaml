@@ -1,0 +1,65 @@
+$kind: http-example
+request:
+  url: http://127.0.0.1:8000/api/v1/oficios
+  method: GET
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Host: 127.0.0.1:8000
+    Connection: close
+    X-Powered-By: PHP/8.5.12
+    Cache-Control: no-cache, private
+    Date: Sun, 01 Nov 2026 05:54:39 GMT
+    Content-Type: application/json
+    Access-Control-Allow-Origin: "*"
+  body:
+    type: json
+    content: |-
+      {
+        "success": true,
+        "message": "Oficios obtenidos correctamente.",
+        "data": [
+          {
+            "id_oficio": 6,
+            "nombre": "Albañilería",
+            "descripcion": "Construcción, reparación y mantenimiento de obras y estructuras."
+          },
+          {
+            "id_oficio": 3,
+            "nombre": "Carpintería",
+            "descripcion": "Fabricación, instalación y reparación de muebles y estructuras de madera."
+          },
+          {
+            "id_oficio": 2,
+            "nombre": "Electricidad",
+            "descripcion": "Instalación, diagnóstico y reparación de sistemas eléctricos."
+          },
+          {
+            "id_oficio": 5,
+            "nombre": "Herrería",
+            "descripcion": "Fabricación y reparación de estructuras y elementos metálicos."
+          },
+          {
+            "id_oficio": 7,
+            "nombre": "Jardinería",
+            "descripcion": "Mantenimiento, diseño y cuidado de jardines y áreas verdes."
+          },
+          {
+            "id_oficio": 4,
+            "nombre": "Pintura",
+            "descripcion": "Aplicación y mantenimiento de pintura en interiores y exteriores."
+          },
+          {
+            "id_oficio": 1,
+            "nombre": "Plomería",
+            "descripcion": "Instalación, reparación y mantenimiento de sistemas hidráulicos y sanitarios."
+          },
+          {
+            "id_oficio": 8,
+            "nombre": "Refrigeración y aire acondicionado",
+            "descripcion": "Instalación, diagnóstico y mantenimiento de equipos de refrigeración y climatización."
+          }
+        ]
+      }
+order: 1000

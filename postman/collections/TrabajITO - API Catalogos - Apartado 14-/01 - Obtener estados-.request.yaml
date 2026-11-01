@@ -1,0 +1,6 @@
+$kind: http-request
+name: 01 - Obtener estados.
+url: http://127.0.0.1:8000/api/v1/estados
+method: GET
+examples: .resources/01 - Obtener estados-.resources/examples
+order: 1000

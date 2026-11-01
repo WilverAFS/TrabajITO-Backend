@@ -1,0 +1,57 @@
+$kind: http-example
+request:
+  url: http://127.0.0.1:8000/api/v1/estados/1/municipios
+  method: GET
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Host: 127.0.0.1:8000
+    Connection: close
+    X-Powered-By: PHP/8.5.12
+    Cache-Control: no-cache, private
+    Date: Sun, 01 Nov 2026 05:54:25 GMT
+    Content-Type: application/json
+    Access-Control-Allow-Origin: "*"
+  body:
+    type: json
+    content: |-
+      {
+        "success": true,
+        "message": "Municipios obtenidos correctamente.",
+        "data": [
+          {
+            "id_municipio": 1,
+            "municipio": "Oaxaca de Juárez"
+          },
+          {
+            "id_municipio": 6,
+            "municipio": "San Antonio de la Cal"
+          },
+          {
+            "id_municipio": 2,
+            "municipio": "San Jacinto Amilpas"
+          },
+          {
+            "id_municipio": 8,
+            "municipio": "San Sebastián Tutla"
+          },
+          {
+            "id_municipio": 7,
+            "municipio": "Santa Cruz Amilpas"
+          },
+          {
+            "id_municipio": 4,
+            "municipio": "Santa Cruz Xoxocotlán"
+          },
+          {
+            "id_municipio": 3,
+            "municipio": "Santa Lucía del Camino"
+          },
+          {
+            "id_municipio": 5,
+            "municipio": "Santa María Atzompa"
+          }
+        ]
+      }
+order: 1000
