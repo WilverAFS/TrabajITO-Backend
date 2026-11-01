@@ -1,0 +1,6 @@
+$kind: http-request
+url: http://127.0.0.1:8000/api/v1/oficios?buscar=electricidad
+method: GET
+queryParams:
+  buscar: electricidad
+order: 3000

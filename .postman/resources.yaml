@@ -1,0 +1,13 @@
+# Use this workspace to collaborate
+workspace:
+  id: 824b6943-3df3-4186-8065-51f5cf6a1951
+
+cloudResources:
+  collections:
+    ../postman/collections/TrabajITO - Catálogos (Faltantes): 0db91f96-eabe-46c0-94eb-52cb822a410a
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/
