@@ -1,0 +1,5 @@
+$kind: http-request
+url: http://127.0.0.1:8000/api/v1/estados/1/municipios
+method: GET
+examples: .resources/02 - Obtener municipios.resources/examples
+order: 2000

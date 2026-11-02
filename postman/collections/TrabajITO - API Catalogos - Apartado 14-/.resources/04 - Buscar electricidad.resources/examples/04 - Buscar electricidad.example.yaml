@@ -1,0 +1,32 @@
+$kind: http-example
+request:
+  url: http://127.0.0.1:8000/api/v1/oficios?buscar=electricidad
+  method: GET
+  queryParams:
+    buscar: electricidad
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Host: 127.0.0.1:8000
+    Connection: close
+    X-Powered-By: PHP/8.5.12
+    Cache-Control: no-cache, private
+    Date: Sun, 01 Nov 2026 05:54:48 GMT
+    Content-Type: application/json
+    Access-Control-Allow-Origin: "*"
+  body:
+    type: json
+    content: |-
+      {
+        "success": true,
+        "message": "Oficios obtenidos correctamente.",
+        "data": [
+          {
+            "id_oficio": 2,
+            "nombre": "Electricidad",
+            "descripcion": "Instalación, diagnóstico y reparación de sistemas eléctricos."
+          }
+        ]
+      }
+order: 1000

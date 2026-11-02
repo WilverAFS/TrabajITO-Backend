@@ -1,0 +1,30 @@
+$kind: http-example
+name: 01 - Obtener estados.
+request:
+  url: http://127.0.0.1:8000/api/v1/estados
+  method: GET
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Host: 127.0.0.1:8000
+    Connection: close
+    X-Powered-By: PHP/8.5.12
+    Cache-Control: no-cache, private
+    Date: Sun, 01 Nov 2026 05:53:53 GMT
+    Content-Type: application/json
+    Access-Control-Allow-Origin: "*"
+  body:
+    type: json
+    content: |-
+      {
+        "success": true,
+        "message": "Estados obtenidos correctamente.",
+        "data": [
+          {
+            "id_estado": 1,
+            "estado": "Oaxaca"
+          }
+        ]
+      }
+order: 1000
