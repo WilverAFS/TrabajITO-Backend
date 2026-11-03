@@ -92,5 +92,11 @@ Route::prefix('v1')->group(function () {
             '/me/perfil',
             [PerfilProfesionalController::class, 'update']
         );
+
+        // Actualizar oficios del perfil profesional
+        Route::put(
+            '/me/perfil/oficios',
+            [PerfilProfesionalController::class, 'updateOficios']
+        );
     });
 });

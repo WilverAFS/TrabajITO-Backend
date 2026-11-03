@@ -466,4 +466,166 @@ class PerfilProfesionalApiTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['perfil']);
     }
+
+    // 16. Actualizar oficios correctamente y reemplazar los anteriores
+    public function test_actualizar_oficios_reemplaza_las_asociaciones_anteriores(): void
+    {
+        $usuario = $this->crearUsuario();
+        $municipio = $this->crearMunicipio();
+
+        $oficioOriginal = $this->crearOficio();
+        $oficioNuevo1 = $this->crearOficio();
+        $oficioNuevo2 = $this->crearOficio();
+
+        $perfil = $this->crearPerfil(
+            $usuario,
+            $municipio,
+            [$oficioOriginal]
+        );
+
+        $token = $this->crearToken($usuario);
+
+        $respuesta = $this->withToken($token)
+            ->putJson('/api/v1/me/perfil/oficios', [
+                'oficios' => [
+                    $oficioNuevo1->id_oficio,
+                    $oficioNuevo2->id_oficio,
+                ],
+            ]);
+
+        $respuesta->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath(
+                'message',
+                'Oficios del perfil actualizados correctamente.'
+            )
+            ->assertJsonPath(
+                'data.id_trabajador',
+                $perfil->id_trabajador
+            )
+            ->assertJsonCount(2, 'data.oficios')
+            ->assertJsonFragment([
+                'id_oficio' => $oficioNuevo1->id_oficio,
+                'nombre' => $oficioNuevo1->nombre,
+            ])
+            ->assertJsonFragment([
+                'id_oficio' => $oficioNuevo2->id_oficio,
+                'nombre' => $oficioNuevo2->nombre,
+            ]);
+
+        $this->assertDatabaseMissing('perfil_oficio', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'id_oficio' => $oficioOriginal->id_oficio,
+        ]);
+
+        $this->assertDatabaseHas('perfil_oficio', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'id_oficio' => $oficioNuevo1->id_oficio,
+        ]);
+
+        $this->assertDatabaseHas('perfil_oficio', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'id_oficio' => $oficioNuevo2->id_oficio,
+        ]);
+
+        $this->assertDatabaseCount('perfil_oficio', 2);
+    }
+
+    // 17. Rechazar actualización de oficios sin autenticación
+    public function test_actualizar_oficios_requiere_autenticacion(): void
+    {
+        $this->putJson('/api/v1/me/perfil/oficios', [
+            'oficios' => [1],
+        ])->assertUnauthorized();
+    }
+
+    // 18. Rechazar actualización de oficios cuando no existe perfil
+    public function test_actualizar_oficios_perfil_inexistente(): void
+    {
+        $usuario = $this->crearUsuario();
+        $oficio = $this->crearOficio();
+
+        $token = $this->crearToken($usuario);
+
+        $respuesta = $this->withToken($token)
+            ->putJson('/api/v1/me/perfil/oficios', [
+                'oficios' => [$oficio->id_oficio],
+            ]);
+
+        $respuesta->assertStatus(404)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath(
+                'error_code',
+                'PROFILE_NOT_FOUND'
+            );
+    }
+
+    // 19. Rechazar actualización de oficios con oficio inactivo
+    public function test_rechazar_oficio_inactivo_al_actualizar(): void
+    {
+        $usuario = $this->crearUsuario();
+        $municipio = $this->crearMunicipio();
+
+        $oficioOriginal = $this->crearOficio();
+        $oficioInactivo = $this->crearOficio(false);
+
+        $perfil = $this->crearPerfil(
+            $usuario,
+            $municipio,
+            [$oficioOriginal]
+        );
+
+        $token = $this->crearToken($usuario);
+
+        $this->withToken($token)
+            ->putJson('/api/v1/me/perfil/oficios', [
+                'oficios' => [$oficioInactivo->id_oficio],
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['oficios.0']);
+
+        // Comprobar que la asociación original permanece.
+        $this->assertDatabaseHas('perfil_oficio', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'id_oficio' => $oficioOriginal->id_oficio,
+        ]);
+    }
+
+    // 20. Rechazar actualización de oficios con oficios duplicados
+    public function test_rechazar_oficios_duplicados_al_actualizar(): void
+    {
+        $usuario = $this->crearUsuario();
+        $municipio = $this->crearMunicipio();
+
+        $oficioOriginal = $this->crearOficio();
+        $oficioNuevo = $this->crearOficio();
+
+        $perfil = $this->crearPerfil(
+            $usuario,
+            $municipio,
+            [$oficioOriginal]
+        );
+
+        $token = $this->crearToken($usuario);
+
+        $this->withToken($token)
+            ->putJson('/api/v1/me/perfil/oficios', [
+                'oficios' => [
+                    $oficioNuevo->id_oficio,
+                    $oficioNuevo->id_oficio,
+                ],
+            ])
+            ->assertUnprocessable();
+
+        // La actualización inválida no debe modificar las asociaciones.
+        $this->assertDatabaseHas('perfil_oficio', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'id_oficio' => $oficioOriginal->id_oficio,
+        ]);
+
+        $this->assertDatabaseMissing('perfil_oficio', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'id_oficio' => $oficioNuevo->id_oficio,
+        ]);
+    }
 }

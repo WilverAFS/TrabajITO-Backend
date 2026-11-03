@@ -9,6 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\Api\V1\UpdatePerfilProfesionalRequest;
+use App\Http\Requests\Api\V1\UpdatePerfilOficiosRequest;
+use App\Http\Resources\Api\V1\PerfilOficiosResource;
 
 class PerfilProfesionalController extends Controller
 {
@@ -111,6 +113,41 @@ class PerfilProfesionalController extends Controller
             'success' => true,
             'message' => 'Perfil profesional actualizado correctamente.',
             'data' => new PerfilProfesionalResource($perfil),
+        ], 200);
+    }
+
+    // Actualizar oficios del perfil profesional propio
+    public function updateOficios(
+        UpdatePerfilOficiosRequest $request
+    ): JsonResponse {
+
+        $perfil = $request->user()
+            ->perfilProfesional()
+            ->first();
+
+        if (!$perfil) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes un perfil profesional registrado.',
+                'error_code' => 'PROFILE_NOT_FOUND',
+                'errors' => null,
+            ], 404);
+        }
+
+        $datos = $request->validated();
+
+        // Reemplazar asociaciones de oficios
+        DB::transaction(function () use ($perfil, $datos) {
+            $perfil->oficios()->sync($datos['oficios']);
+        });
+
+        // Cargar los oficios actualizados
+        $perfil->load('oficios');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Oficios del perfil actualizados correctamente.',
+            'data' => new PerfilOficiosResource($perfil),
         ], 200);
     }
 }
