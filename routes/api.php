@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CatalogoController;
 use Illuminate\Support\Facades\Route;
@@ -34,10 +35,35 @@ Route::prefix('v1')->group(function () {
         [CatalogoController::class, 'oficios']
     );
 
+    //Recuperar contraseña olvidada
+    Route::post(
+        '/auth/forgot-password',
+        [AccountController::class, 'forgotPassword']
+    );
+
+    //Reestrablecer contraseña
+    Route::post(
+        '/auth/reset-password',
+        [AccountController::class, 'resetPassword']
+    );
+
+
     // Rutas que requieren autenticación
     Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/me', [AuthController::class, 'me']);
+
+        //Actualizar cuenta
+        Route::patch(
+            '/me',
+            [AccountController::class, 'update']
+        );
+
+        //Cambiar contraseña
+        Route::put(
+            '/me/password',
+            [AccountController::class, 'changePassword']
+        );
 
         Route::post(
             '/auth/logout',
