@@ -300,4 +300,170 @@ class PerfilProfesionalApiTest extends TestCase
                 'PROFILE_NOT_FOUND'
             );
     }
+
+    // 10. Actualizar perfil profesional correctamente.
+    public function test_actualizar_perfil_profesional_correctamente(): void
+    {
+        $usuario = $this->crearUsuario();
+
+        $municipioOriginal = $this->crearMunicipio();
+        $municipioNuevo = $this->crearMunicipio();
+
+        $oficio = $this->crearOficio();
+
+        $perfil = $this->crearPerfil(
+            $usuario,
+            $municipioOriginal,
+            [$oficio]
+        );
+
+        $token = $this->crearToken($usuario);
+
+        $respuesta = $this->withToken($token)
+            ->patchJson('/api/v1/me/perfil', [
+                'id_municipio' => $municipioNuevo->id_municipio,
+                'descripcion' => 'Descripción profesional actualizada.',
+            ]);
+
+        $respuesta->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath(
+                'message',
+                'Perfil profesional actualizado correctamente.'
+            )
+            ->assertJsonPath(
+                'data.id_trabajador',
+                $perfil->id_trabajador
+            )
+            ->assertJsonPath(
+                'data.descripcion',
+                'Descripción profesional actualizada.'
+            )
+            ->assertJsonPath('data.activo', false)
+            ->assertJsonPath(
+                'data.municipio.id_municipio',
+                $municipioNuevo->id_municipio
+            );
+
+        $this->assertDatabaseHas('perfiles_profesionales', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'id_municipio' => $municipioNuevo->id_municipio,
+            'descripcion' => 'Descripción profesional actualizada.',
+            'activo' => false,
+        ]);
+
+        $this->assertDatabaseHas('perfil_oficio', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'id_oficio' => $oficio->id_oficio,
+        ]);
+    }
+
+    // 11. Permitir actualizar solamente la descripción.
+    public function test_actualizar_perfil_solo_descripcion(): void
+    {
+        $usuario = $this->crearUsuario();
+        $municipio = $this->crearMunicipio();
+        $oficio = $this->crearOficio();
+
+        $perfil = $this->crearPerfil(
+            $usuario,
+            $municipio,
+            [$oficio]
+        );
+
+        $token = $this->crearToken($usuario);
+
+        $this->withToken($token)
+            ->patchJson('/api/v1/me/perfil', [
+                'descripcion' => 'Nueva descripción profesional.',
+            ])
+            ->assertOk()
+            ->assertJsonPath(
+                'data.descripcion',
+                'Nueva descripción profesional.'
+            );
+
+        $this->assertDatabaseHas('perfiles_profesionales', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'id_municipio' => $municipio->id_municipio,
+            'descripcion' => 'Nueva descripción profesional.',
+        ]);
+    }
+
+    // 12. Rechazar actualización sin autenticación.
+    public function test_actualizar_perfil_requiere_autenticacion(): void
+    {
+        $this->patchJson('/api/v1/me/perfil', [
+            'descripcion' => 'Descripción de prueba.',
+        ])->assertUnauthorized();
+    }
+
+    // 13. Rechazar actualización cuando no existe perfil.
+    public function test_actualizar_perfil_inexistente(): void
+    {
+        $usuario = $this->crearUsuario();
+        $token = $this->crearToken($usuario);
+
+        $this->withToken($token)
+            ->patchJson('/api/v1/me/perfil', [
+                'descripcion' => 'Descripción de prueba.',
+            ])
+            ->assertStatus(404)
+            ->assertJsonPath(
+                'error_code',
+                'PROFILE_NOT_FOUND'
+            );
+    }
+
+    // 14. Rechazar municipio inactivo al actualizar.
+    public function test_rechazar_municipio_inactivo_al_actualizar_perfil(): void
+    {
+        $usuario = $this->crearUsuario();
+
+        $municipioOriginal = $this->crearMunicipio();
+        $municipioInactivo = $this->crearMunicipio(false);
+
+        $oficio = $this->crearOficio();
+
+        $perfil = $this->crearPerfil(
+            $usuario,
+            $municipioOriginal,
+            [$oficio]
+        );
+
+        $token = $this->crearToken($usuario);
+
+        $this->withToken($token)
+            ->patchJson('/api/v1/me/perfil', [
+                'id_municipio' => $municipioInactivo->id_municipio,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['id_municipio']);
+
+        $this->assertDatabaseHas('perfiles_profesionales', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'id_municipio' => $municipioOriginal->id_municipio,
+        ]);
+    }
+
+    // 15. Rechazar una actualización sin campos.
+    public function test_actualizar_perfil_requiere_al_menos_un_campo(): void
+    {
+        $usuario = $this->crearUsuario();
+        $municipio = $this->crearMunicipio();
+        $oficio = $this->crearOficio();
+
+        $this->crearPerfil(
+            $usuario,
+            $municipio,
+            [$oficio]
+        );
+
+        $token = $this->crearToken($usuario);
+
+        $this->withToken($token)
+            ->patchJson('/api/v1/me/perfil', [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['perfil']);
+    }
 }

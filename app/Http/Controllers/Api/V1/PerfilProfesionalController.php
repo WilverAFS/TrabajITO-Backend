@@ -8,6 +8,7 @@ use App\Http\Resources\Api\V1\PerfilProfesionalResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\Api\V1\UpdatePerfilProfesionalRequest;
 
 class PerfilProfesionalController extends Controller
 {
@@ -78,5 +79,38 @@ class PerfilProfesionalController extends Controller
             'message' => 'Perfil profesional obtenido correctamente.',
             'data' => new PerfilProfesionalResource($perfil),
         ]);
+    }
+
+    // Actualizar perfil profesional propio
+    public function update(
+        UpdatePerfilProfesionalRequest $request
+    ): JsonResponse {
+
+        $perfil = $request->user()
+            ->perfilProfesional()
+            ->first();
+
+        if (!$perfil) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tienes un perfil profesional registrado.',
+                'error_code' => 'PROFILE_NOT_FOUND',
+                'errors' => null,
+            ], 404);
+        }
+
+        $perfil->fill($request->validated());
+        $perfil->save();
+
+        $perfil->load([
+            'municipio.estado',
+            'oficios',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Perfil profesional actualizado correctamente.',
+            'data' => new PerfilProfesionalResource($perfil),
+        ], 200);
     }
 }

@@ -86,5 +86,11 @@ Route::prefix('v1')->group(function () {
             '/me/perfil',
             [PerfilProfesionalController::class, 'show']
         );
+
+        // Actualizar perfil profesional propio
+        Route::patch(
+            '/me/perfil',
+            [PerfilProfesionalController::class, 'update']
+        );
     });
 });
