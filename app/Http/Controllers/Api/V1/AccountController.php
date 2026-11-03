@@ -9,7 +9,7 @@ use App\Http\Requests\Api\V1\ChangePasswordRequest;
 use App\Http\Requests\Api\V1\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\ResetPasswordRequest;
 
-use App\Http\Resources\Api\V1\UsuarioAutenticadoResource;
+use App\Http\Resources\Api\V1\UsuarioCuentaResource;
 
 use App\Models\User;
 
@@ -37,7 +37,7 @@ class AccountController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Datos de la cuenta actualizados correctamente.',
-            'data' => UsuarioAutenticadoResource::make(
+            'data' => UsuarioCuentaResource::make(
                 $usuario
             )->resolve($request),
         ], 200);
@@ -69,6 +69,9 @@ class AccountController extends Controller
         $usuario->update([
             'contrasena_hash' => $request->password,
         ]);
+
+        //Revocacion de tokens para exigir un nuevo inicio de sesion
+        $usuario->tokens()->delete();
 
         return response()->json([
             'success' => true,
