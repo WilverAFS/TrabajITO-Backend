@@ -126,13 +126,15 @@
 				{
 					"listen": "test",
 					"script": {
-						"type": "text/javascript",
 						"exec": [
 							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
 							"const b = pm.response.json();",
 							"pm.test('Cambio exitoso', () => pm.expect(b.success).to.eql(true));",
 							"pm.collectionVariables.set('passwordActual', pm.collectionVariables.get('passwordNueva'));"
-						]
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -147,7 +149,7 @@
 						}
 					]
 				},
-				"method": "PUT",
+				"method": "POST",
 				"header": [
 					{
 						"key": "Accept",
