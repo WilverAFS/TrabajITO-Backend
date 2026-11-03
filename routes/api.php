@@ -39,13 +39,13 @@ Route::prefix('v1')->group(function () {
     Route::post(
         '/auth/forgot-password',
         [AccountController::class, 'forgotPassword']
-    );
+    )->middleware('throttle:5,1');
 
     //Reestrablecer contraseña
     Route::post(
         '/auth/reset-password',
         [AccountController::class, 'resetPassword']
-    );
+    )->middleware('throttle:5,1');
 
 
     // Rutas que requieren autenticación
@@ -60,7 +60,7 @@ Route::prefix('v1')->group(function () {
         );
 
         //Cambiar contraseña
-        Route::put(
+        Route::patch(
             '/me/password',
             [AccountController::class, 'changePassword']
         );
