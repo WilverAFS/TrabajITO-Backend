@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CatalogoController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\PerfilProfesionalController;
 
 Route::prefix('v1')->group(function () {
 
@@ -73,6 +74,17 @@ Route::prefix('v1')->group(function () {
         Route::get(
             '/tipos-publicacion',
             [CatalogoController::class, 'tiposPublicacion']
+        );
+
+        // Perfil profesional
+        Route::post(
+            '/perfiles',
+            [PerfilProfesionalController::class, 'store']
+        );
+
+        Route::get(
+            '/me/perfil',
+            [PerfilProfesionalController::class, 'show']
         );
     });
 });

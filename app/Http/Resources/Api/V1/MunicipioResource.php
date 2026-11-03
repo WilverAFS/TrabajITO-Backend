@@ -15,6 +15,10 @@ class MunicipioResource extends JsonResource
         return [
             'id_municipio' => $this->id_municipio,
             'municipio' => $this->municipio,
+
+            'estado' => EstadoResource::make(
+                $this->whenLoaded('estado')
+            ),
         ];
     }
 }
