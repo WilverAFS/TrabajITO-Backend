@@ -43,8 +43,12 @@ class UpdateAccountRequest extends FormRequest
 
             'telefono' => [
                 'nullable',
-                'string',
-                'max:20',
+                'digits:10',
+                Rule::unique('users', 'telefono')
+                    ->ignore(
+                        $this->user()->id_usuario,
+                        'id_usuario'
+                    ),
             ],
         ];
     }

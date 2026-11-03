@@ -81,6 +81,10 @@ class AccountApiTest extends TestCase
                 'Actualizado'
             )
             ->assertJsonPath(
+                'data.nombre_completo',
+                'Juan Actualizado'
+            )
+            ->assertJsonPath(
                 'data.telefono',
                 '9511234567'
             );
@@ -145,7 +149,7 @@ class AccountApiTest extends TestCase
 
         $respuesta = $this
             ->withToken($token)
-            ->putJson('/api/v1/me/password', [
+            ->patchJson('/api/v1/me/password', [
                 'password_actual' => 'Prueba123!',
                 'password' => 'NuevaClave123!',
                 'password_confirmation' => 'NuevaClave123!',
@@ -178,7 +182,7 @@ class AccountApiTest extends TestCase
 
         $respuesta = $this
             ->withToken($token)
-            ->putJson('/api/v1/me/password', [
+            ->patchJson('/api/v1/me/password', [
                 'password_actual' => 'Incorrecta123!',
                 'password' => 'NuevaClave123!',
                 'password_confirmation' => 'NuevaClave123!',
@@ -198,7 +202,7 @@ class AccountApiTest extends TestCase
 
     public function test_cambio_de_contrasena_requiere_autenticacion(): void
     {
-        $this->putJson('/api/v1/me/password', [
+        $this->patchJson('/api/v1/me/password', [
             'password_actual' => 'Prueba123!',
             'password' => 'NuevaClave123!',
             'password_confirmation' => 'NuevaClave123!',
@@ -311,5 +315,71 @@ class AccountApiTest extends TestCase
             0
         );
     }
-    
+
+    public function test_cambio_de_contrasena_revoca_todos_los_tokens(): void
+    {
+        $usuario = $this->crearUsuario();
+
+        $tokenA = $usuario
+            ->createToken('Sesion A')
+            ->plainTextToken;
+
+        $tokenB = $usuario
+            ->createToken('Sesion B')
+            ->plainTextToken;
+
+        $this->assertDatabaseCount(
+            'personal_access_tokens',
+            2
+        );
+
+        $this->withToken($tokenA)
+            ->patchJson('/api/v1/me/password', [
+                'password_actual' => 'Prueba123!',
+                'password' => 'NuevaClave123!',
+                'password_confirmation' => 'NuevaClave123!',
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseCount(
+            'personal_access_tokens',
+            0
+        );
+    }
+
+    public function test_rechaza_telefono_duplicado(): void
+    {
+        $usuarioA = $this->crearUsuario([
+            'telefono' => '9511234567',
+        ]);
+
+        $usuarioB = $this->crearUsuario([
+            'telefono' => '9517654321',
+        ]);
+
+        $token = $usuarioA
+            ->createToken('Prueba')
+            ->plainTextToken;
+
+        $this->withToken($token)
+            ->patchJson('/api/v1/me', [
+                'telefono' => '9517654321',
+            ])
+            ->assertStatus(422);
+    }
+
+    public function test_rechaza_telefono_con_longitud_invalida(): void
+    {
+        $usuario = $this->crearUsuario();
+
+        $token = $usuario
+            ->createToken('Prueba')
+            ->plainTextToken;
+
+        $this->withToken($token)
+            ->patchJson('/api/v1/me', [
+                'telefono' => '123',
+            ])
+            ->assertStatus(422);
+    }
 }
