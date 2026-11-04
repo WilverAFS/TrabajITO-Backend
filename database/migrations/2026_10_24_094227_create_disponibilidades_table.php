@@ -57,18 +57,21 @@ return new class extends Migration
             );
         });
 
-        //Restricciones especificas de integridad para PostgreSQL
-        DB::statement(
-            'ALTER TABLE disponibilidades
-            ADD CONSTRAINT disponibilidades_dia_semana_check
-            CHECK (dia_semana BETWEEN 1 AND 7)'
-        );
+        // Restricciones especificas de integridad para PostgreSQL
+        if (DB::getDriverName() === 'pgsql') {
 
-        DB::statement(
-            'ALTER TABLE disponibilidades
-            ADD CONSTRAINT disponibilidades_horas_check
-            CHECK (hora_fin > hora_inicio)'
-        );
+            DB::statement(
+                'ALTER TABLE disponibilidades
+                ADD CONSTRAINT disponibilidades_dia_semana_check
+                CHECK (dia_semana BETWEEN 1 AND 7)'
+            );
+
+            DB::statement(
+                'ALTER TABLE disponibilidades
+                ADD CONSTRAINT disponibilidades_horas_check
+                CHECK (hora_fin > hora_inicio)'
+            );
+        }
     }
 
     /**
