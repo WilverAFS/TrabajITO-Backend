@@ -38,14 +38,18 @@ return new class extends Migration
 
 
         //Cuando exista fecha de vencimineot, esta no puede ser anterior a la fecha de emision
-        DB::statement(
-            'ALTER TABLE certificados
-            ADD CONSTRAINT certificados_fecha_check
-            CHECK (
-                fecha_vencimiento IS NULL 
-                OR fecha_vencimiento >= fecha_emision
-            )'
-        );
+        // Restricción de integridad especifica para PostgreSQL
+        if (DB::getDriverName() === 'pgsql') {
+
+            DB::statement(
+                'ALTER TABLE certificados
+                ADD CONSTRAINT certificados_fecha_check
+                CHECK (
+                    fecha_vencimiento IS NULL
+                    OR fecha_vencimiento >= fecha_emision
+                )'
+            );
+        }
     }
 
     /**
