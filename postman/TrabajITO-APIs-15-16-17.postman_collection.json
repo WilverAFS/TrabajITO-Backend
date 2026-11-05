@@ -1,0 +1,978 @@
+{
+  "info": {
+    "_postman_id": "1bbaf999-a93c-46ed-b3ee-e7d2b3bebc8d",
+    "name": "TrabajITO - APIs 15, 16 y 17",
+    "description": "Colección de pruebas para las APIs desarrolladas en la rama back-jmcs.\n\nAlcance:\n- API 15: Perfil profesional.\n- API 16: Disponibilidad.\n- API 17: Certificados.\n\nAntes de ejecutar:\n1. Iniciar el Backend con php artisan serve.\n2. Importar y seleccionar el entorno TrabajITO - Local.\n3. Verificar que existan los catálogos sembrados: municipio 1 (Oaxaca de Juárez), oficio 2 (Electricidad) y oficio 8 (Refrigeración y aire acondicionado).\n4. Ejecutar la colección en orden. La carpeta de preparación registra un usuario nuevo y obtiene el token Sanctum.\n5. En API 17 - Registrar certificado, seleccionar un archivo PDF/JPG/JPEG/PNG de máximo 5 MB.\n\nEl usuario de prueba se crea nuevamente en cada ejecución. Las solicitudes protegidas heredan el Bearer token guardado automáticamente.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "00 - Preparación de pruebas",
+      "description": "Registro e inicio de sesión de un usuario nuevo para ejecutar las APIs protegidas.",
+      "item": [
+        {
+          "name": "01 - Registrar usuario de prueba",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Registra un usuario nuevo. El correo se genera automáticamente en cada ejecución.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"{{testNombre}}\",\n  \"apellido\": \"{{testApellido}}\",\n  \"correo\": \"{{testEmail}}\",\n  \"telefono\": null,\n  \"password\": \"{{testPassword}}\",\n  \"password_confirmation\": \"{{testPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const suffix = Date.now().toString() + \".\" + Math.random().toString(36).slice(2,8);",
+                  "pm.collectionVariables.set(\"testEmail\", \"postman.apis.\" + suffix + \"@example.test\");",
+                  "pm.collectionVariables.set(\"testPassword\", \"Prueba123!\");",
+                  "pm.collectionVariables.set(\"testNombre\", \"Postman\");",
+                  "pm.collectionVariables.set(\"testApellido\", \"Pruebas APIs\");",
+                  "[\"authToken\",\"registeredUserId\",\"idTrabajador\",\"idDisponibilidad\",\"idCertificado\"].forEach(k => pm.collectionVariables.unset(k));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201 - Usuario registrado\", () => pm.response.to.have.status(201));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Registro exitoso\", () => pm.expect(b.success).to.eql(true));",
+                  "pm.test(\"Correo correcto\", () => pm.expect(b.data.usuario.correo).to.eql(pm.collectionVariables.get(\"testEmail\")));",
+                  "pm.test(\"Token generado\", () => pm.expect(b.data.token).to.be.a(\"string\").and.not.empty);",
+                  "pm.collectionVariables.set(\"registeredUserId\", String(b.data.usuario.id_usuario));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 - Iniciar sesión de usuario de prueba",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Obtiene el token de Sanctum para las solicitudes protegidas.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"device_name\": \"TrabajITO Postman APIs 15-17\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 - Login correcto\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Autenticación exitosa\", () => pm.expect(b.success).to.eql(true));",
+                  "pm.test(\"Correo autenticado correcto\", () => pm.expect(b.data.usuario.correo).to.eql(pm.collectionVariables.get(\"testEmail\")));",
+                  "pm.test(\"Token de Sanctum generado\", () => pm.expect(b.data.token).to.be.a(\"string\").and.not.empty);",
+                  "pm.collectionVariables.set(\"authToken\", b.data.token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "API 15 - Perfil profesional",
+      "description": "Creación, consulta, actualización y validación del perfil profesional.",
+      "item": [
+        {
+          "name": "01 - Crear perfil profesional",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/perfiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "perfiles"
+              ]
+            },
+            "description": "Crea el perfil usando municipio 1 (Oaxaca de Juárez), oficio 2 (Electricidad) y oficio 8 (Refrigeración), de acuerdo con los seeders.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_municipio\": {{idMunicipioPrueba}},\n  \"descripcion\": \"Técnico con experiencia en instalaciones eléctricas y mantenimiento.\",\n  \"oficios\": [{{idOficioElectricidad}}, {{idOficioRefrigeracion}}]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201 - Perfil creado\", () => pm.response.to.have.status(201));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Creación exitosa\", () => pm.expect(b.success).to.eql(true));",
+                  "pm.test(\"Pertenece al usuario registrado\", () => pm.expect(String(b.data.id_usuario)).to.eql(pm.collectionVariables.get(\"registeredUserId\")));",
+                  "pm.test(\"Municipio configurado\", () => pm.expect(Number(b.data.municipio.id_municipio)).to.eql(Number(pm.variables.get(\"idMunicipioPrueba\"))));",
+                  "pm.test(\"Dos oficios asociados\", () => pm.expect(b.data.oficios).to.have.lengthOf(2));",
+                  "pm.collectionVariables.set(\"idTrabajador\", String(b.data.id_trabajador));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 - Consultar perfil profesional propio",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil"
+              ]
+            },
+            "description": "Consulta el perfil del usuario autenticado."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 - Perfil consultado\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Consulta exitosa\", () => pm.expect(b.success).to.eql(true));",
+                  "pm.test(\"ID de trabajador coincide\", () => pm.expect(String(b.data.id_trabajador)).to.eql(pm.collectionVariables.get(\"idTrabajador\")));",
+                  "pm.test(\"Incluye municipio y oficios\", () => { pm.expect(b.data.municipio).to.be.an(\"object\"); pm.expect(b.data.oficios).to.be.an(\"array\").that.is.not.empty; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 - Actualizar perfil profesional",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil"
+              ]
+            },
+            "description": "Actualiza parcialmente la descripción del perfil propio.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Perfil actualizado desde la colección de Postman de TrabajITO.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 - Perfil actualizado\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Actualización exitosa\", () => pm.expect(b.success).to.eql(true));",
+                  "pm.test(\"Descripción actualizada\", () => pm.expect(b.data.descripcion).to.eql(\"Perfil actualizado desde la colección de Postman de TrabajITO.\"));",
+                  "pm.test(\"Se conserva el perfil\", () => pm.expect(String(b.data.id_trabajador)).to.eql(pm.collectionVariables.get(\"idTrabajador\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 - Actualizar oficios del perfil",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil/oficios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil",
+                "oficios"
+              ]
+            },
+            "description": "Reemplaza las asociaciones de oficios del perfil.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oficios\": [{{idOficioElectricidad}}, {{idOficioRefrigeracion}}]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 - Oficios actualizados\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Actualización exitosa\", () => pm.expect(b.success).to.eql(true));",
+                  "pm.test(\"Perfil correcto\", () => pm.expect(String(b.data.id_trabajador)).to.eql(pm.collectionVariables.get(\"idTrabajador\")));",
+                  "pm.test(\"Dos oficios devueltos\", () => pm.expect(b.data.oficios).to.have.lengthOf(2));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 - Rechazar creación de un segundo perfil",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/perfiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "perfiles"
+              ]
+            },
+            "description": "Debe responder HTTP 409 porque el usuario ya tiene un perfil.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_municipio\": {{idMunicipioPrueba}},\n  \"descripcion\": \"Este segundo perfil no debe crearse.\",\n  \"oficios\": [{{idOficioElectricidad}}]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409 - Perfil duplicado\", () => pm.response.to.have.status(409));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Código PROFILE_ALREADY_EXISTS\", () => pm.expect(b.error_code).to.eql(\"PROFILE_ALREADY_EXISTS\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 - Rechazar consulta sin autenticación",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil"
+              ]
+            },
+            "description": "Debe responder HTTP 401 al no enviar token.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401 - Acceso rechazado\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "API 16 - Disponibilidad",
+      "description": "Registro, consulta, actualización, validación de superposición y eliminación de horarios.",
+      "item": [
+        {
+          "name": "01 - Registrar disponibilidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil/disponibilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil",
+                "disponibilidades"
+              ]
+            },
+            "description": "Registra disponibilidad para lunes de 09:00 a 12:00.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dia_semana\": 1,\n  \"hora_inicio\": \"09:00\",\n  \"hora_fin\": \"12:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201 - Disponibilidad registrada\", () => pm.response.to.have.status(201));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Registro exitoso\", () => pm.expect(b.success).to.eql(true));",
+                  "pm.test(\"Día y horario correctos\", () => { pm.expect(b.data.dia_semana).to.eql(1); pm.expect(b.data.hora_inicio).to.eql(\"09:00:00\"); pm.expect(b.data.hora_fin).to.eql(\"12:00:00\"); });",
+                  "pm.collectionVariables.set(\"idDisponibilidad\", String(b.data.id_disponibilidad));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 - Consultar disponibilidades propias",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil/disponibilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil",
+                "disponibilidades"
+              ]
+            },
+            "description": "Consulta los horarios del trabajador autenticado."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 - Disponibilidades consultadas\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Consulta exitosa y lista\", () => { pm.expect(b.success).to.eql(true); pm.expect(b.data).to.be.an(\"array\"); });",
+                  "pm.test(\"Incluye la disponibilidad creada\", () => pm.expect(b.data.map(x => String(x.id_disponibilidad))).to.include(pm.collectionVariables.get(\"idDisponibilidad\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 - Actualizar disponibilidad",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil/disponibilidades/{{idDisponibilidad}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil",
+                "disponibilidades",
+                "{{idDisponibilidad}}"
+              ]
+            },
+            "description": "Actualiza el horario a 13:00-16:00 y cambia su estado a inactivo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hora_inicio\": \"13:00\",\n  \"hora_fin\": \"16:00\",\n  \"activo\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 - Disponibilidad actualizada\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Actualización exitosa\", () => pm.expect(b.success).to.eql(true));",
+                  "pm.test(\"Horario actualizado\", () => { pm.expect(b.data.hora_inicio).to.eql(\"13:00:00\"); pm.expect(b.data.hora_fin).to.eql(\"16:00:00\"); });",
+                  "pm.test(\"Estado inactivo\", () => pm.expect(b.data.activo).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 - Rechazar disponibilidad superpuesta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil/disponibilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil",
+                "disponibilidades"
+              ]
+            },
+            "description": "Intenta crear un horario 14:00-15:00 que se superpone con el intervalo 13:00-16:00. Debe responder HTTP 422.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dia_semana\": 1,\n  \"hora_inicio\": \"14:00\",\n  \"hora_fin\": \"15:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422 - Superposición rechazada\", () => pm.response.to.have.status(422));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Código VALIDATION_ERROR\", () => pm.expect(b.error_code).to.eql(\"VALIDATION_ERROR\"));",
+                  "pm.test(\"Conflicto indicado en hora_inicio\", () => pm.expect(b.errors).to.have.property(\"hora_inicio\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 - Eliminar disponibilidad",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil/disponibilidades/{{idDisponibilidad}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil",
+                "disponibilidades",
+                "{{idDisponibilidad}}"
+              ]
+            },
+            "description": "Elimina la disponibilidad creada. Respuesta esperada: HTTP 204 sin cuerpo."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204 - Disponibilidad eliminada\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 - Rechazar eliminación de disponibilidad inexistente",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil/disponibilidades/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil",
+                "disponibilidades",
+                "999999"
+              ]
+            },
+            "description": "Debe responder HTTP 404 con AVAILABILITY_NOT_FOUND."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404 - Disponibilidad inexistente\", () => pm.response.to.have.status(404));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Código AVAILABILITY_NOT_FOUND\", () => pm.expect(b.error_code).to.eql(\"AVAILABILITY_NOT_FOUND\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "API 17 - Certificados",
+      "description": "Registro multipart/form-data, consulta y eliminación de certificados.",
+      "item": [
+        {
+          "name": "01 - Registrar certificado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil/certificados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil",
+                "certificados"
+              ]
+            },
+            "description": "Solicitud multipart/form-data. Selecciona un archivo PDF, JPG, JPEG o PNG de máximo 5 MB en el campo documento. No agregues Content-Type manualmente; Postman debe generar el boundary.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "nombre",
+                  "value": "Certificado de instalaciones eléctricas",
+                  "type": "text"
+                },
+                {
+                  "key": "institucion_emisora",
+                  "value": "Institución de capacitación de prueba",
+                  "type": "text"
+                },
+                {
+                  "key": "fecha_emision",
+                  "value": "2025-05-15",
+                  "type": "text"
+                },
+                {
+                  "key": "documento",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201 - Certificado registrado\", () => pm.response.to.have.status(201));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Registro exitoso\", () => pm.expect(b.success).to.eql(true));",
+                  "pm.test(\"Nombre correcto\", () => pm.expect(b.data.nombre).to.eql(\"Certificado de instalaciones eléctricas\"));",
+                  "pm.test(\"Inicia sin verificar\", () => pm.expect(b.data.verificado).to.eql(false));",
+                  "pm.test(\"URL del documento generada\", () => pm.expect(b.data.documento_url).to.be.a(\"string\").and.match(/^\\/storage\\/certificados\\//));",
+                  "pm.test(\"No expone ruta interna\", () => pm.expect(b.data).to.not.have.property(\"ruta_documento\"));",
+                  "pm.collectionVariables.set(\"idCertificado\", String(b.data.id_certificado));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02 - Consultar certificados propios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil/certificados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil",
+                "certificados"
+              ]
+            },
+            "description": "Consulta los certificados del trabajador autenticado."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200 - Certificados consultados\", () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Consulta exitosa y lista\", () => { pm.expect(b.success).to.eql(true); pm.expect(b.data).to.be.an(\"array\"); });",
+                  "pm.test(\"Incluye el certificado creado\", () => pm.expect(b.data.map(x => String(x.id_certificado))).to.include(pm.collectionVariables.get(\"idCertificado\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03 - Eliminar certificado",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil/certificados/{{idCertificado}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil",
+                "certificados",
+                "{{idCertificado}}"
+              ]
+            },
+            "description": "Elimina el certificado y el documento almacenado. Respuesta esperada: HTTP 204."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204 - Certificado eliminado\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 - Rechazar eliminación de certificado inexistente",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/me/perfil/certificados/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "me",
+                "perfil",
+                "certificados",
+                "999999"
+              ]
+            },
+            "description": "Debe responder HTTP 404 con CERTIFICATE_NOT_FOUND."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404 - Certificado inexistente\", () => pm.response.to.have.status(404));",
+                  "const b = pm.response.json();",
+                  "pm.test(\"Código CERTIFICATE_NOT_FOUND\", () => pm.expect(b.error_code).to.eql(\"CERTIFICATE_NOT_FOUND\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testPassword",
+      "value": "Prueba123!",
+      "type": "string"
+    },
+    {
+      "key": "testNombre",
+      "value": "Postman",
+      "type": "string"
+    },
+    {
+      "key": "testApellido",
+      "value": "Pruebas APIs",
+      "type": "string"
+    },
+    {
+      "key": "registeredUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "idMunicipioPrueba",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "idOficioElectricidad",
+      "value": "2",
+      "type": "string"
+    },
+    {
+      "key": "idOficioRefrigeracion",
+      "value": "8",
+      "type": "string"
+    },
+    {
+      "key": "idTrabajador",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "idDisponibilidad",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "idCertificado",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

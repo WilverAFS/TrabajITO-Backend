@@ -4,6 +4,9 @@ use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CatalogoController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\PerfilProfesionalController;
+use App\Http\Controllers\Api\V1\DisponibilidadController;
+use App\Http\Controllers\Api\V1\CertificadoController;
 
 Route::prefix('v1')->group(function () {
 
@@ -73,6 +76,73 @@ Route::prefix('v1')->group(function () {
         Route::get(
             '/tipos-publicacion',
             [CatalogoController::class, 'tiposPublicacion']
+        );
+
+        // Perfil profesional
+        Route::post(
+            '/perfiles',
+            [PerfilProfesionalController::class, 'store']
+        );
+
+        Route::get(
+            '/me/perfil',
+            [PerfilProfesionalController::class, 'show']
+        );
+
+        // Actualizar perfil profesional propio
+        Route::patch(
+            '/me/perfil',
+            [PerfilProfesionalController::class, 'update']
+        );
+
+        // Actualizar oficios del perfil profesional
+        Route::put(
+            '/me/perfil/oficios',
+            [PerfilProfesionalController::class, 'updateOficios']
+        );
+
+        // Disponibilidad del trabajador
+        // Consultar disponibilidades propias
+        Route::get(
+            '/me/perfil/disponibilidades',
+            [DisponibilidadController::class, 'index']
+        );
+
+        // Registrar disponibilidad
+        Route::post(
+            '/me/perfil/disponibilidades',
+            [DisponibilidadController::class, 'store']
+        );
+
+        // Actualizar disponibilidad
+        Route::patch(
+            '/me/perfil/disponibilidades/{id_disponibilidad}',
+            [DisponibilidadController::class, 'update']
+        );
+
+        // Eliminar disponibilidad
+        Route::delete(
+            '/me/perfil/disponibilidades/{id_disponibilidad}',
+            [DisponibilidadController::class, 'destroy']
+        );
+
+        // Certificados del trabajador
+        // Consultar certificados propios
+        Route::get(
+            '/me/perfil/certificados',
+            [CertificadoController::class, 'index']
+        );
+
+        // Registrar certificado
+        Route::post(
+            '/me/perfil/certificados',
+            [CertificadoController::class, 'store']
+        );
+
+        // Eliminar certificado
+        Route::delete(
+            '/me/perfil/certificados/{id_certificado}',
+            [CertificadoController::class, 'destroy']
         );
     });
 });
