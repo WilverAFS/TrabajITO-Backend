@@ -1,0 +1,5 @@
+$kind: http-request
+name: API 20 - Detalle de contratación
+url: ""
+method: GET
+order: 13000

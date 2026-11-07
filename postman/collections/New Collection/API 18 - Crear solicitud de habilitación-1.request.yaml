@@ -1,0 +1,5 @@
+$kind: http-request
+name: API 18 - Crear solicitud de habilitación
+url: ""
+method: GET
+order: 17000
