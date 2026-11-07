@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\PerfilProfesionalController;
 use App\Http\Controllers\Api\V1\DisponibilidadController;
 use App\Http\Controllers\Api\V1\CertificadoController;
+use App\Http\Controllers\Api\V1\SolicitudHabilitacionController;
+use App\Http\Controllers\Api\V1\TrabajadorController;
+use App\Http\Controllers\Api\V1\ContratacionController;
 
 Route::prefix('v1')->group(function () {
 
@@ -37,6 +40,21 @@ Route::prefix('v1')->group(function () {
         '/oficios',
         [CatalogoController::class, 'oficios']
     );
+    
+    // API 19 - Exploración pública de trabajadores
+
+    // Listar y buscar trabajadores habilitados
+    Route::get(
+        '/trabajadores',
+        [TrabajadorController::class, 'index']
+    );
+
+    // Consultar el perfil público de un trabajador
+    Route::get(
+        '/trabajadores/{id_trabajador}',
+        [TrabajadorController::class, 'show']
+    );
+
 
     //Recuperar contraseña olvidada
     Route::post(
@@ -139,10 +157,47 @@ Route::prefix('v1')->group(function () {
             [CertificadoController::class, 'store']
         );
 
+        
         // Eliminar certificado
         Route::delete(
             '/me/perfil/certificados/{id_certificado}',
             [CertificadoController::class, 'destroy']
         );
+
+        // API 18 - Solicitudes de habilitación
+
+        // Enviar solicitud de habilitación
+        Route::post(
+            '/me/perfil/solicitudes-habilitacion',
+            [SolicitudHabilitacionController::class, 'store']
+        );
+
+        // Consultar historial de solicitudes propias
+        Route::get(
+            '/me/perfil/solicitudes-habilitacion',
+            [SolicitudHabilitacionController::class, 'index']
+        );
+        
+        // API 20 - Contrataciones
+
+        // Crear solicitud de contratación
+        Route::post(
+            '/contrataciones',
+            [ContratacionController::class, 'store']
+        );
+
+        // Listar contrataciones propias
+        Route::get(
+            '/contrataciones',
+            [ContratacionController::class, 'index']
+        );
+
+        // Consultar una contratación específica
+        Route::get(
+            '/contrataciones/{id_contratacion}',
+            [ContratacionController::class, 'show']
+        );
+
+
     });
 });
