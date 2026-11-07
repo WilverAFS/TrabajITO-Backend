@@ -134,9 +134,11 @@ class TrabajadorController extends Controller
         $direction = $filtros['direction'] ?? 'desc';
 
         if ($sort === 'reputacion') {
-            $consulta->orderBy(
-                'calificacion_promedio',
-                $direction
+            // Colocar siempre los trabajadores sin valoraciones al final.
+            $orden = $direction === 'asc' ? 'ASC' : 'DESC';
+
+            $consulta->orderByRaw(
+                "calificacion_promedio {$orden} NULLS LAST"
             );
         } else {
             $consulta->orderBy(
@@ -144,6 +146,7 @@ class TrabajadorController extends Controller
                 $direction
             );
         }
+
 
         // Desempate para mantener un orden estable.
         $consulta->orderBy(
