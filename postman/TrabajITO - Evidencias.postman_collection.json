@@ -1,0 +1,452 @@
+{
+	"info": {
+		"_postman_id": "38b1a344-fb0c-4de7-9457-a0b40517f4cd",
+		"name": "TrabajITO - Evidencias",
+		"description": "Pruebas manuales de la API 23 - Evidencias.\n\nPrerequisitos:\n1. Ejecutar php artisan serve\n2. Ejecutar php artisan storage:link\n3. Ejecutar php artisan migrate:fresh --seed\n4. La publicación de prueba tiene id_publicacion = 1\n\nEndpoints cubiertos:\n- POST /publicaciones/{id_publicacion}/evidencias\n- DELETE /evidencias/{id_evidencia}",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "56497863"
+	},
+	"item": [
+		{
+			"name": "01 - Login trabajador",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.collectionVariables.set('authTokenTrabajador', b.data.token);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"correo\": \"{{correoTrabajador}}\",\n  \"password\": \"{{passwordTrabajador}}\",\n  \"device_name\": \"Postman Evidencias\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "02 - Cargar evidencia correctamente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+							"const b = pm.response.json();",
+							"pm.test('Evidencia creada', () => pm.expect(b.data.length).to.be.greaterThan(0));",
+							"pm.collectionVariables.set('idEvidencia', String(b.data[0].id_evidencia));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "archivos[]",
+							"type": "file",
+							"src": "postman-cloud:///1f1db98f-0fe8-4500-ae5f-55701c3f9aab"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/publicaciones/1/evidencias",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"publicaciones",
+						"1",
+						"evidencias"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "03 - Publicación inexistente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+							"const b = pm.response.json();",
+							"pm.test('Error correcto', () => pm.expect(b.error_code).to.eql('PUBLICATION_NOT_FOUND'));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "archivos[]",
+							"type": "file",
+							"src": "postman-cloud:///1f1db98f-0fe8-4500-ae5f-55701c3f9aab"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/publicaciones/999999/evidencias",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"publicaciones",
+						"999999",
+						"evidencias"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "04- Login segundo trabajador",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const b = pm.response.json();",
+							"",
+							"pm.collectionVariables.set(",
+							"    \"authTokenTrabajador2\",",
+							"    b.data.token",
+							");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"correo\": \"{{correoTrabajador2}}\",\n  \"password\": \"{{passwordTrabajador2}}\",\n  \"device_name\": \"Postman Evidencias\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "05 - Usuario sin permisos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(",
+							"    \"HTTP 403\",",
+							"    () => pm.response.to.have.status(403)",
+							");",
+							"",
+							"const b = pm.response.json();",
+							"",
+							"pm.test(",
+							"    \"Operacion rechazada\",",
+							"    () => pm.expect(",
+							"        b.success",
+							"    ).to.eql(false)",
+							");",
+							"",
+							"pm.test(",
+							"    \"Codigo de error correcto\",",
+							"    () => pm.expect(",
+							"        b.error_code",
+							"    ).to.eql(",
+							"        \"EVIDENCE_ACCESS_DENIED\"",
+							"    )",
+							");",
+							"",
+							"pm.test(",
+							"    \"Mensaje presente\",",
+							"    () => pm.expect(",
+							"        b.message",
+							"    ).to.be.a(\"string\").and.not.empty",
+							");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador2}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "archivos[]",
+							"type": "file",
+							"src": "postman-cloud:///1f1db98f-0fe8-4500-ae5f-55701c3f9aab"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/publicaciones/1/evidencias",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"publicaciones",
+						"1",
+						"evidencias"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "06 - Login administrador",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const b = pm.response.json();",
+							"pm.collectionVariables.set('authTokenAdmin', b.data.token);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"correo\": \"{{correoAdmin}}\",\n  \"password\": \"{{passwordAdmin}}\",\n  \"device_name\": \"Postman Evidencias Admin\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "07 - Eliminar evidencia como administrador",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenAdmin}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/evidencias/{{idEvidencia}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"evidencias",
+						"{{idEvidencia}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://127.0.0.1:8000/api/v1"
+		},
+		{
+			"key": "correoTrabajador",
+			"value": "trabajador1@trabajito.test"
+		},
+		{
+			"key": "passwordTrabajador",
+			"value": "Trabajador12345!"
+		},
+		{
+			"key": "correoAdmin",
+			"value": "admin@trabajito.test"
+		},
+		{
+			"key": "passwordAdmin",
+			"value": "Admin12345!"
+		},
+		{
+			"key": "authTokenTrabajador",
+			"value": ""
+		},
+		{
+			"key": "authTokenAdmin",
+			"value": ""
+		},
+		{
+			"key": "idEvidencia",
+			"value": ""
+		},
+		{
+			"key": "correoTrabajador2",
+			"value": ""
+		},
+		{
+			"key": "passwordTrabajador2",
+			"value": ""
+		},
+		{
+			"key": "authTokenTrabajador2",
+			"value": ""
+		}
+	]
+}
