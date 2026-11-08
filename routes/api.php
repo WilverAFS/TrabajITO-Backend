@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\CertificadoController;
 use App\Http\Controllers\Api\V1\SolicitudHabilitacionController;
 use App\Http\Controllers\Api\V1\TrabajadorController;
 use App\Http\Controllers\Api\V1\ContratacionController;
+use App\Http\Controllers\Api\V1\ContratacionTransicionController;
 
 Route::prefix('v1')->group(function () {
 
@@ -40,7 +41,7 @@ Route::prefix('v1')->group(function () {
         '/oficios',
         [CatalogoController::class, 'oficios']
     );
-    
+
     // API 19 - Exploración pública de trabajadores
 
     // Listar y buscar trabajadores habilitados
@@ -157,7 +158,7 @@ Route::prefix('v1')->group(function () {
             [CertificadoController::class, 'store']
         );
 
-        
+
         // Eliminar certificado
         Route::delete(
             '/me/perfil/certificados/{id_certificado}',
@@ -177,7 +178,7 @@ Route::prefix('v1')->group(function () {
             '/me/perfil/solicitudes-habilitacion',
             [SolicitudHabilitacionController::class, 'index']
         );
-        
+
         // API 20 - Contrataciones
 
         // Crear solicitud de contratación
@@ -198,6 +199,32 @@ Route::prefix('v1')->group(function () {
             [ContratacionController::class, 'show']
         );
 
+        /**
+         * Transiciones de contratacion
+         */
+        Route::post(
+            '/contrataciones/{contratacion:id_contratacion}/aceptar',
+            [ContratacionTransicionController::class, 'aceptar']
+        );
 
+        Route::post(
+            '/contrataciones/{contratacion:id_contratacion}/rechazar',
+            [ContratacionTransicionController::class, 'rechazar']
+        );
+
+        Route::post(
+            '/contrataciones/{contratacion:id_contratacion}/iniciar',
+            [ContratacionTransicionController::class, 'iniciar']
+        );
+
+        Route::post(
+            '/contrataciones/{contratacion:id_contratacion}/finalizar',
+            [ContratacionTransicionController::class, 'finalizar']
+        );
+
+        Route::post(
+            '/contrataciones/{contratacion:id_contratacion}/cancelar',
+            [ContratacionTransicionController::class, 'cancelar']
+        );
     });
 });
