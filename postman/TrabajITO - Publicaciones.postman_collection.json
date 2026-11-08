@@ -1,0 +1,975 @@
+{
+	"info": {
+		"_postman_id": "66d251b7-f2a6-4f8a-933b-7c81f538b0a8",
+		"name": "TrabajITO - Publicaciones",
+		"description": "Pruebas mínimas de la API 22 - Publicaciones.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "56497863"
+	},
+	"item": [
+		{
+			"name": "01 - Login trabajador",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.collectionVariables.set('authTokenTrabajador', b.data.token);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"correo\": \"{{correoTrabajador}}\",\n  \"password\": \"{{passwordTrabajador}}\",\n  \"device_name\": \"Postman Publicaciones\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "02 - Consultar publicación existente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(",
+							"  \"HTTP 200\",",
+							"  () => pm.response.to.have.status(200)",
+							");",
+							"",
+							"const b = pm.response.json();",
+							"",
+							"pm.test(",
+							"  \"Existe publicación\",",
+							"  () => pm.expect(",
+							"    b.data.id_publicacion",
+							"  ).to.eql(1)",
+							");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/publicaciones/1",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"publicaciones",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "03 - Consultar publicaciones por trabajador",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/publicaciones/trabajador/1",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"publicaciones",
+						"trabajador",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "04 - Consultar mis publicaciones",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(",
+							"  \"HTTP 200\",",
+							"  () => pm.response.to.have.status(200)",
+							");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/me/perfil/publicaciones",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"me",
+						"perfil",
+						"publicaciones"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "05 - Actualizar publicacion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(",
+							"  \"HTTP 200\",",
+							"  () => pm.response.to.have.status(200)",
+							");",
+							"",
+							"const b = pm.response.json();",
+							"",
+							"pm.test(",
+							"  \"Actualización exitosa\",",
+							"  () => pm.expect(",
+							"      b.success",
+							"  ).to.eql(true)",
+							");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"titulo\": \"Reparación eléctrica actualizada desde Postman\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/publicaciones/1",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"publicaciones",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "06 - Login administrador",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const b = pm.response.json();",
+							"pm.collectionVariables.set('authTokenAdmin', b.data.token);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"correo\": \"{{correoAdmin}}\",\n  \"password\": \"{{passwordAdmin}}\",\n  \"device_name\": \"Postman Admin\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "07 - Ocultar publicación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(",
+							"  \"HTTP 200\",",
+							"  () => pm.response.to.have.status(200)",
+							");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenAdmin}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/admin/publicaciones/1/ocultar",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"publicaciones",
+						"1",
+						"ocultar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "08 - Consultar publicacion oculta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(",
+							"  \"HTTP 404\",",
+							"  () => pm.response.to.have.status(404)",
+							");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/publicaciones/1",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"publicaciones",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "09 - Verificar acceso denegado",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(",
+							"  \"HTTP 200\",",
+							"  () => pm.response.to.have.status(200)",
+							");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/publicaciones/1",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"publicaciones",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10.1 - Login cliente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.collectionVariables.set('authTokenCliente', b.data.token);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"correo\": \"{{correoCliente}}\",\n  \"password\": \"{{passwordCliente}}\",\n  \"device_name\": \"Postman Cliente\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10.2 - Crear contratación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+							"const b = pm.response.json();",
+							"pm.collectionVariables.set('idContratacion', String(b.data.id_contratacion));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenCliente}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id_trabajador\": {{idTrabajador}},\n  \"descripcion_servicio\": \"Prueba flujo completo de contratación\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10.3 - Login trabajador",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.collectionVariables.set('authTokenTrabajador', b.data.token);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"correo\": \"{{correoTrabajador}}\",\n  \"password\": \"{{passwordTrabajador}}\",\n  \"device_name\": \"Postman Trabajador\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10.4 - Aceptar contratación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.test('Estado aceptado', () => pm.expect(b.data.estado.id_estado_contratacion).to.eql(2));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones/{{idContratacion}}/aceptar",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones",
+						"{{idContratacion}}",
+						"aceptar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10.5 - Iniciar contratación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.test('Estado en proceso', () => pm.expect(b.data.estado.id_estado_contratacion).to.eql(4));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones/{{idContratacion}}/iniciar",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones",
+						"{{idContratacion}}",
+						"iniciar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10.6 - Finalizar contratación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.test('Estado finalizado', () => pm.expect(b.data.estado.id_estado_contratacion).to.eql(5));",
+							"pm.test('Fecha finalizacion presente', () => pm.expect(b.data.fecha_finalizacion).to.not.eql(null));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones/{{idContratacion}}/finalizar",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones",
+						"{{idContratacion}}",
+						"finalizar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10 - Crear publicacion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(",
+							"  \"HTTP 201\",",
+							"  () => pm.response.to.have.status(201)",
+							");",
+							"",
+							"const b = pm.response.json();",
+							"",
+							"pm.test(",
+							"  \"Publicación creada\",",
+							"  () => pm.expect(b.success).to.eql(true)",
+							");",
+							"",
+							"pm.collectionVariables.set(",
+							"  \"idPublicacion\",",
+							"  b.data.id_publicacion",
+							");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id_tipo_publicacion\": 3,\n  \"titulo\": \"Instalación eléctrica residencial\",\n  \"descripcion\": \"Trabajo realizado satisfactoriamente para el cliente utilizando materiales certificados.\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones/{{idContratacion}}/publicacion",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones",
+						"{{idContratacion}}",
+						"publicacion"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "11 - Crear Publicacion de contratacion inexistente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(",
+							"  \"HTTP 404\",",
+							"  () => pm.response.to.have.status(404)",
+							");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id_tipo_publicacion\": 3,\n  \"titulo\": \"Instalación eléctrica residencial\",\n  \"descripcion\": \"Trabajo realizado satisfactoriamente para el cliente utilizando materiales certificados.\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones/999999/publicacion",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones",
+						"999999",
+						"publicacion"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "12 - Crear publicacion duplicada",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(",
+							"  \"HTTP 409\",",
+							"  () => pm.response.to.have.status(409)",
+							");"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id_tipo_publicacion\": 3,\n  \"titulo\": \"Instalación eléctrica residencial\",\n  \"descripcion\": \"Trabajo realizado satisfactoriamente para el cliente utilizando materiales certificados.\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones/{{idContratacion}}/publicacion",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones",
+						"{{idContratacion}}",
+						"publicacion"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://127.0.0.1:8000/api/v1"
+		},
+		{
+			"key": "correoTrabajador",
+			"value": "trabajador1@trabajito.test"
+		},
+		{
+			"key": "passwordTrabajador",
+			"value": "Trabajador12345!"
+		},
+		{
+			"key": "correoAdmin",
+			"value": "admin@trabajito.test"
+		},
+		{
+			"key": "passwordAdmin",
+			"value": "Admin12345!"
+		},
+		{
+			"key": "idTrabajador",
+			"value": "1"
+		},
+		{
+			"key": "authTokenTrabajador",
+			"value": ""
+		},
+		{
+			"key": "authTokenAdmin",
+			"value": ""
+		},
+		{
+			"key": "idPublicacion",
+			"value": "1"
+		},
+		{
+			"key": "correoCliente",
+			"value": "cliente@trabajito.test"
+		},
+		{
+			"key": "passwordCliente",
+			"value": "Cliente12345"
+		},
+		{
+			"key": "authTokenCliente",
+			"value": ""
+		},
+		{
+			"key": "idContratacion",
+			"value": ""
+		}
+	]
+}
