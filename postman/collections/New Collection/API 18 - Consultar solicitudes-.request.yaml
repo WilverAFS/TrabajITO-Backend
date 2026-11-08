@@ -1,0 +1,5 @@
+$kind: http-request
+name: API 18 - Consultar solicitudes.
+url: ""
+method: GET
+order: 14000
