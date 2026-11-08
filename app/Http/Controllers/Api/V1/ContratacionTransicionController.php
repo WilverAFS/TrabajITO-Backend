@@ -90,15 +90,27 @@ class ContratacionTransicionController extends Controller
             );
         }
 
+        $estadoActual =
+            (int) $contratacion
+                ->id_estado_contratacion;
+
+        if ($esCliente) {
+
+            $permitidos = [1, 2, 4];
+        } else {
+
+            $permitidos = [2, 4];
+        }
+
         if (
             ! in_array(
-                (int) $contratacion->id_estado_contratacion,
-                [1, 2, 4]
+                $estadoActual,
+                $permitidos
             )
         ) {
             return $this->error(
                 'La contratación no puede cancelarse en su estado actual.',
-                'INVALID_STATE_TRANSITION',
+                'INVALID_HIRING_TRANSITION',
                 409
             );
         }
@@ -112,11 +124,11 @@ class ContratacionTransicionController extends Controller
         return response()->json([
             'success' => true,
             'message' =>
-                'Contratación cancelada correctamente.',
+            'Contratación cancelada correctamente.',
             'data' =>
-                new ContratacionTransicionResource(
-                    $contratacion
-                ),
+            new ContratacionTransicionResource(
+                $contratacion
+            ),
         ]);
     }
 
@@ -155,7 +167,7 @@ class ContratacionTransicionController extends Controller
         ) {
             return $this->error(
                 'La transición solicitada no es válida.',
-                'INVALID_STATE_TRANSITION',
+                'INVALID_HIRING_TRANSITION',
                 409
             );
         }
@@ -187,11 +199,11 @@ class ContratacionTransicionController extends Controller
         return response()->json([
             'success' => true,
             'message' =>
-                'Estado de contratación actualizado correctamente.',
+            'Estado de contratación actualizado correctamente.',
             'data' =>
-                new ContratacionTransicionResource(
-                    $contratacion
-                ),
+            new ContratacionTransicionResource(
+                $contratacion
+            ),
         ]);
     }
 

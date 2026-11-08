@@ -237,7 +237,7 @@
 						}
 					]
 				},
-				"method": "POST",
+				"method": "PATCH",
 				"header": [
 					{
 						"key": "Accept",
@@ -286,7 +286,7 @@
 						}
 					]
 				},
-				"method": "POST",
+				"method": "PATCH",
 				"header": [
 					{
 						"key": "Accept",
@@ -336,7 +336,7 @@
 						}
 					]
 				},
-				"method": "POST",
+				"method": "PATCH",
 				"header": [
 					{
 						"key": "Accept",
@@ -366,7 +366,7 @@
 						"exec": [
 							"pm.test('HTTP 409', () => pm.response.to.have.status(409));",
 							"const b = pm.response.json();",
-							"pm.test('Error esperado', () => pm.expect(b.error_code).to.eql('INVALID_STATE_TRANSITION'));"
+							"pm.test('Error esperado', () => pm.expect(b.error_code).to.eql('INVALID_HIRING_TRANSITION'));"
 						],
 						"type": "text/javascript",
 						"packages": {},
@@ -385,7 +385,7 @@
 						}
 					]
 				},
-				"method": "POST",
+				"method": "PATCH",
 				"header": [
 					{
 						"key": "Accept",
@@ -434,7 +434,7 @@
 						}
 					]
 				},
-				"method": "POST",
+				"method": "PATCH",
 				"header": [
 					{
 						"key": "Accept",

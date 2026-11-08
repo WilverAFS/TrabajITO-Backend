@@ -19,14 +19,16 @@ class ContratacionTransicionApiTest extends TestCase
     {
         parent::setUp();
 
-        foreach ([
-            'Pendiente',
-            'Aceptada',
-            'Rechazada',
-            'En proceso',
-            'Finalizada',
-            'Cancelada',
-        ] as $nombre) {
+        foreach (
+            [
+                'Pendiente',
+                'Aceptada',
+                'Rechazada',
+                'En proceso',
+                'Finalizada',
+                'Cancelada',
+            ] as $nombre
+        ) {
             EstadoContratacion::firstOrCreate([
                 'estado_contratacion' => $nombre,
             ]);
@@ -90,16 +92,16 @@ class ContratacionTransicionApiTest extends TestCase
         return Contratacion::create([
             'id_cliente' => $cliente->id_usuario,
             'id_trabajador' =>
-                $trabajador->id_trabajador,
+            $trabajador->id_trabajador,
             'id_estado_contratacion' => $estado,
             'descripcion_servicio' =>
-                'Servicio de prueba',
+            'Servicio de prueba',
         ]);
     }
 
     public function test_requiere_autenticacion(): void
     {
-        $this->postJson(
+        $this->patchJson(
             '/api/v1/contrataciones/1/aceptar'
         )->assertUnauthorized();
     }
@@ -129,7 +131,7 @@ class ContratacionTransicionApiTest extends TestCase
                     $usuarioTrabajador
                 )
             )
-            ->postJson(
+            ->patchJson(
                 "/api/v1/contrataciones/{$contratacion->id_contratacion}/aceptar"
             )
             ->assertOk()
@@ -142,8 +144,8 @@ class ContratacionTransicionApiTest extends TestCase
             'contrataciones',
             [
                 'id_contratacion' =>
-                    $contratacion
-                        ->id_contratacion,
+                $contratacion
+                    ->id_contratacion,
                 'id_estado_contratacion' => 2,
             ]
         );
@@ -174,7 +176,7 @@ class ContratacionTransicionApiTest extends TestCase
                     $usuarioTrabajador
                 )
             )
-            ->postJson(
+            ->patchJson(
                 "/api/v1/contrataciones/{$contratacion->id_contratacion}/rechazar"
             )
             ->assertOk()
@@ -209,7 +211,7 @@ class ContratacionTransicionApiTest extends TestCase
                     $usuarioTrabajador
                 )
             )
-            ->postJson(
+            ->patchJson(
                 "/api/v1/contrataciones/{$contratacion->id_contratacion}/iniciar"
             )
             ->assertOk()
@@ -244,7 +246,7 @@ class ContratacionTransicionApiTest extends TestCase
                     $usuarioTrabajador
                 )
             )
-            ->postJson(
+            ->patchJson(
                 "/api/v1/contrataciones/{$contratacion->id_contratacion}/finalizar"
             )
             ->assertOk()
@@ -257,8 +259,8 @@ class ContratacionTransicionApiTest extends TestCase
             'contrataciones',
             [
                 'id_contratacion' =>
-                    $contratacion
-                        ->id_contratacion,
+                $contratacion
+                    ->id_contratacion,
                 'fecha_finalizacion' => null,
             ]
         );
@@ -287,7 +289,7 @@ class ContratacionTransicionApiTest extends TestCase
             ->withToken(
                 $this->token($cliente)
             )
-            ->postJson(
+            ->patchJson(
                 "/api/v1/contrataciones/{$contratacion->id_contratacion}/cancelar"
             )
             ->assertOk()
@@ -325,7 +327,7 @@ class ContratacionTransicionApiTest extends TestCase
                     $usuarioAjeno
                 )
             )
-            ->postJson(
+            ->patchJson(
                 "/api/v1/contrataciones/{$contratacion->id_contratacion}/aceptar"
             )
             ->assertForbidden()
@@ -360,13 +362,13 @@ class ContratacionTransicionApiTest extends TestCase
                     $usuarioTrabajador
                 )
             )
-            ->postJson(
+            ->patchJson(
                 "/api/v1/contrataciones/{$contratacion->id_contratacion}/aceptar"
             )
             ->assertStatus(409)
             ->assertJsonPath(
                 'error_code',
-                'INVALID_STATE_TRANSITION'
+                'INVALID_HIRING_TRANSITION'
             );
     }
 
@@ -393,9 +395,44 @@ class ContratacionTransicionApiTest extends TestCase
             ->withToken(
                 $this->token($cliente)
             )
-            ->postJson(
+            ->patchJson(
                 "/api/v1/contrataciones/{$contratacion->id_contratacion}/aceptar"
             )
             ->assertForbidden();
+    }
+
+    public function test_trabajador_no_puede_cancelar_contratacion_pendiente(): void
+    {
+        $cliente = $this->crearUsuario();
+
+        $usuarioTrabajador =
+            $this->crearUsuario();
+
+        $perfil =
+            $this->crearPerfil(
+                $usuarioTrabajador
+            );
+
+        $contratacion =
+            $this->crearContratacion(
+                $cliente,
+                $perfil,
+                1
+            );
+
+        $this
+            ->withToken(
+                $this->token(
+                    $usuarioTrabajador
+                )
+            )
+            ->patchJson(
+                "/api/v1/contrataciones/{$contratacion->id_contratacion}/cancelar"
+            )
+            ->assertStatus(409)
+            ->assertJsonPath(
+                'error_code',
+                'INVALID_HIRING_TRANSITION'
+            );
     }
 }

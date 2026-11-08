@@ -216,27 +216,27 @@ Route::prefix('v1')->group(function () {
         /**
          * Transiciones de contratacion
          */
-        Route::post(
+        Route::patch(
             '/contrataciones/{contratacion:id_contratacion}/aceptar',
             [ContratacionTransicionController::class, 'aceptar']
         );
 
-        Route::post(
+        Route::patch(
             '/contrataciones/{contratacion:id_contratacion}/rechazar',
             [ContratacionTransicionController::class, 'rechazar']
         );
 
-        Route::post(
+        Route::patch(
             '/contrataciones/{contratacion:id_contratacion}/iniciar',
             [ContratacionTransicionController::class, 'iniciar']
         );
 
-        Route::post(
+        Route::patch(
             '/contrataciones/{contratacion:id_contratacion}/finalizar',
             [ContratacionTransicionController::class, 'finalizar']
         );
 
-        Route::post(
+        Route::patch(
             '/contrataciones/{contratacion:id_contratacion}/cancelar',
             [ContratacionTransicionController::class, 'cancelar']
         );
