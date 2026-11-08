@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\TrabajadorController;
 use App\Http\Controllers\Api\V1\ContratacionController;
 use App\Http\Controllers\Api\V1\ContratacionTransicionController;
 use App\Http\Controllers\Api\V1\PublicacionController;
+use App\Http\Controllers\Api\V1\EvidenciaController;
 
 Route::prefix('v1')->group(function () {
 
@@ -267,6 +268,19 @@ Route::prefix('v1')->group(function () {
             [PublicacionController::class, 'ocultar']
         );
 
+        /**
+         * EVIDENCIAS
+         */
+        // Cargar evidencias a una publicación
+        Route::post(
+            '/publicaciones/{id_publicacion}/evidencias',
+            [EvidenciaController::class, 'store']
+        );
 
+        // Eliminar evidencia
+        Route::delete(
+            '/evidencias/{id_evidencia}',
+            [EvidenciaController::class, 'destroy']
+        );
     });
 });
