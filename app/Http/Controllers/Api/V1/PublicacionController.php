@@ -100,7 +100,7 @@ class PublicacionController extends Controller
 
         $publicacion->load([
             'tipoPublicacion',
-            'contratacion',
+            'contratacion.trabajador.usuario',
             'evidencias',
             'valoracion',
         ]);
@@ -128,7 +128,7 @@ class PublicacionController extends Controller
         $publicacion = Publicacion::query()
             ->with([
                 'tipoPublicacion',
-                'contratacion.trabajador',
+                'contratacion.trabajador.usuario',
                 'evidencias',
                 'valoracion',
             ])
@@ -250,7 +250,7 @@ class PublicacionController extends Controller
 
         $publicacion->load([
             'tipoPublicacion',
-            'contratacion',
+            'contratacion.trabajador.usuario',
             'evidencias',
             'valoracion',
         ]);
@@ -337,7 +337,7 @@ class PublicacionController extends Controller
         $publicaciones = Publicacion::query()
             ->with([
                 'tipoPublicacion',
-                'contratacion',
+                'contratacion.trabajador.usuario',
                 'evidencias',
                 'valoracion',
             ])
@@ -380,7 +380,7 @@ class PublicacionController extends Controller
         $publicaciones = Publicacion::query()
             ->with([
                 'tipoPublicacion',
-                'contratacion',
+                'contratacion.trabajador.usuario',
                 'evidencias',
                 'valoracion',
             ])

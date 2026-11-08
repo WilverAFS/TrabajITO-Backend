@@ -28,7 +28,7 @@ class PublicacionResource extends JsonResource
             $this->fecha_publicacion
                 ?->toIso8601String(),
 
-            'tipo_publicacion' =>
+            'tipo' =>
             $this->relationLoaded('tipoPublicacion') ? [
                 'id_tipo_publicacion' =>
                 $this->tipoPublicacion
@@ -51,33 +51,46 @@ class PublicacionResource extends JsonResource
                 ]
                 : null,
 
+            'trabajador' =>
+            $this->relationLoaded(
+                'contratacion'
+            ) &&
+                $this->contratacion?->relationLoaded(
+                    'trabajador'
+                ) &&
+                $this->contratacion
+                ?->trabajador
+                ?->relationLoaded(
+                    'usuario'
+                )
+                ? [
+                    'id_trabajador' =>
+                    $this->contratacion
+                        ->trabajador
+                        ->id_trabajador,
+
+                    'nombre_completo' =>
+                    trim(
+                        $this->contratacion
+                            ->trabajador
+                            ->usuario
+                            ->nombre
+                            . ' ' .
+                            $this->contratacion
+                            ->trabajador
+                            ->usuario
+                            ->apellido
+                    ),
+                ]
+                : null,
+
             'evidencias' =>
             $this->relationLoaded(
                 'evidencias'
             )
-                ? $this->evidencias
-                ->map(
-                    fn($evidencia) => [
-
-                        'id_evidencia' =>
-                        $evidencia
-                            ->id_evidencia,
-
-                        'tipo_archivo' =>
-                        $evidencia
-                            ->tipo_archivo,
-
-                        'ruta_archivo' =>
-                        $evidencia
-                            ->ruta_archivo,
-
-                        'fecha_carga' =>
-                        $evidencia
-                            ->fecha_carga
-                            ?->toIso8601String(),
-                    ]
+                ? EvidenciaResource::collection(
+                    $this->evidencias
                 )
-                ->values()
                 : [],
 
             'valoracion' =>
