@@ -56,11 +56,10 @@ class CargarEvidenciasRequest extends FormRequest
                 . 'video/quicktime',
 
                 /*
-                 * 100 MB.
-                 *
-                 * Laravel usa KB.
+                 * La validacion del tamaño maximo permitido se maneja en el controlador
+                 * Imagen = 10MB
+                 * Video = 100MB
                  */
-                'max:102400',
             ],
         ];
     }

@@ -9,7 +9,6 @@ use App\Models\Evidencia;
 use App\Models\Publicacion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -22,8 +21,7 @@ class EvidenciaController extends Controller
     public function store(
         CargarEvidenciasRequest $request,
         int $id_publicacion
-    ): JsonResponse|AnonymousResourceCollection {
-
+    ): JsonResponse {
         $publicacion = Publicacion::query()
             ->with([
                 'contratacion.trabajador',
@@ -75,21 +73,21 @@ class EvidenciaController extends Controller
 
         $imagenesActuales =
             $publicacion
-                ->evidencias
-                ->where(
-                    'tipo_archivo',
-                    'IMAGEN'
-                )
-                ->count();
+            ->evidencias
+            ->where(
+                'tipo_archivo',
+                'IMAGEN'
+            )
+            ->count();
 
         $videosActuales =
             $publicacion
-                ->evidencias
-                ->where(
-                    'tipo_archivo',
-                    'VIDEO'
-                )
-                ->count();
+            ->evidencias
+            ->where(
+                'tipo_archivo',
+                'VIDEO'
+            )
+            ->count();
 
         $nuevasImagenes = 0;
         $nuevosVideos = 0;
@@ -98,15 +96,40 @@ class EvidenciaController extends Controller
             $request->file('archivos')
             as $archivo
         ) {
+            $mime = $archivo->getMimeType();
+            $tamano = $archivo->getSize();
 
             if (
                 str_starts_with(
-                    $archivo->getMimeType(),
+                    $mime,
                     'image/'
                 )
             ) {
+                if (
+                    $tamano >
+                    (10 * 1024 * 1024)
+                ) {
+                    return $this->error(
+                        'Las imágenes no pueden superar los 10 MB.',
+                        'IMAGE_TOO_LARGE',
+                        422
+                    );
+                }
+
                 $nuevasImagenes++;
             } else {
+
+                if (
+                    $tamano >
+                    (100 * 1024 * 1024)
+                ) {
+                    return $this->error(
+                        'Los videos no pueden superar los 100 MB.',
+                        'VIDEO_TOO_LARGE',
+                        422
+                    );
+                }
+
                 $nuevosVideos++;
             }
         }
@@ -161,17 +184,17 @@ class EvidenciaController extends Controller
                     $evidencia =
                         Evidencia::create([
                             'id_publicacion' =>
-                                $publicacion
-                                    ->id_publicacion,
+                            $publicacion
+                                ->id_publicacion,
 
                             'tipo_archivo' =>
-                                $tipoArchivo,
+                            $tipoArchivo,
 
                             'ruta_archivo' =>
-                                $ruta,
+                            $ruta,
 
                             'fecha_carga' =>
-                                now(),
+                            now(),
                         ]);
 
                     $creadas->push(
@@ -183,9 +206,15 @@ class EvidenciaController extends Controller
             }
         );
 
-        return EvidenciaResource::collection(
-            $evidencias
-        )->response()->setStatusCode(201);
+        return response()->json([
+            'success' => true,
+            'message' =>
+            'Evidencias cargadas correctamente.',
+            'data' =>
+            EvidenciaResource::collection(
+                $evidencias
+            ),
+        ], 201);
     }
 
     /**
@@ -219,12 +248,12 @@ class EvidenciaController extends Controller
         $esPropietario =
             $evidencia->publicacion &&
             $evidencia
-                ->publicacion
-                ->contratacion &&
+            ->publicacion
+            ->contratacion &&
             $evidencia
-                ->publicacion
-                ->contratacion
-                ->trabajador &&
+            ->publicacion
+            ->contratacion
+            ->trabajador &&
             (
                 (int)
                 $evidencia
