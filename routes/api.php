@@ -10,6 +10,9 @@ use App\Http\Controllers\Api\V1\CertificadoController;
 use App\Http\Controllers\Api\V1\SolicitudHabilitacionController;
 use App\Http\Controllers\Api\V1\TrabajadorController;
 use App\Http\Controllers\Api\V1\ContratacionController;
+use App\Http\Controllers\Api\V1\ContratacionTransicionController;
+use App\Http\Controllers\Api\V1\PublicacionController;
+use App\Http\Controllers\Api\V1\EvidenciaController;
 
 Route::prefix('v1')->group(function () {
 
@@ -40,7 +43,7 @@ Route::prefix('v1')->group(function () {
         '/oficios',
         [CatalogoController::class, 'oficios']
     );
-    
+
     // API 19 - Exploración pública de trabajadores
 
     // Listar y buscar trabajadores habilitados
@@ -67,6 +70,18 @@ Route::prefix('v1')->group(function () {
         '/auth/reset-password',
         [AccountController::class, 'resetPassword']
     )->middleware('throttle:5,1');
+
+    // Consultar una publicación específica
+    Route::get(
+        '/publicaciones/{id_publicacion}',
+        [PublicacionController::class, 'show']
+    );
+
+    // Consultar publicaciones visibles de un trabajador
+    Route::get(
+        '/publicaciones/trabajador/{id_trabajador}',
+        [PublicacionController::class, 'publicacionesPorTrabajador']
+    );
 
 
     // Rutas que requieren autenticación
@@ -157,7 +172,7 @@ Route::prefix('v1')->group(function () {
             [CertificadoController::class, 'store']
         );
 
-        
+
         // Eliminar certificado
         Route::delete(
             '/me/perfil/certificados/{id_certificado}',
@@ -177,7 +192,7 @@ Route::prefix('v1')->group(function () {
             '/me/perfil/solicitudes-habilitacion',
             [SolicitudHabilitacionController::class, 'index']
         );
-        
+
         // API 20 - Contrataciones
 
         // Crear solicitud de contratación
@@ -198,6 +213,74 @@ Route::prefix('v1')->group(function () {
             [ContratacionController::class, 'show']
         );
 
+        /**
+         * Transiciones de contratacion
+         */
+        Route::patch(
+            '/contrataciones/{contratacion:id_contratacion}/aceptar',
+            [ContratacionTransicionController::class, 'aceptar']
+        );
 
+        Route::patch(
+            '/contrataciones/{contratacion:id_contratacion}/rechazar',
+            [ContratacionTransicionController::class, 'rechazar']
+        );
+
+        Route::patch(
+            '/contrataciones/{contratacion:id_contratacion}/iniciar',
+            [ContratacionTransicionController::class, 'iniciar']
+        );
+
+        Route::patch(
+            '/contrataciones/{contratacion:id_contratacion}/finalizar',
+            [ContratacionTransicionController::class, 'finalizar']
+        );
+
+        Route::patch(
+            '/contrataciones/{contratacion:id_contratacion}/cancelar',
+            [ContratacionTransicionController::class, 'cancelar']
+        );
+
+        /**
+         * Publicaciones
+         */
+        // Crear publicación asociada a una contratación finalizada
+        Route::post(
+            '/contrataciones/{id_contratacion}/publicacion',
+            [PublicacionController::class, 'store']
+        );
+
+        // Actualizar publicación propia
+        Route::patch(
+            '/publicaciones/{id_publicacion}',
+            [PublicacionController::class, 'update']
+        );
+
+        // Consultar publicaciones propias
+        Route::get(
+            '/me/perfil/publicaciones',
+            [PublicacionController::class, 'misPublicaciones']
+        );
+
+        // Ocultar publicación (administrador)
+        Route::patch(
+            '/admin/publicaciones/{id_publicacion}/ocultar',
+            [PublicacionController::class, 'ocultar']
+        );
+
+        /**
+         * EVIDENCIAS
+         */
+        // Cargar evidencias a una publicación
+        Route::post(
+            '/publicaciones/{id_publicacion}/evidencias',
+            [EvidenciaController::class, 'store']
+        );
+
+        // Eliminar evidencia
+        Route::delete(
+            '/evidencias/{id_evidencia}',
+            [EvidenciaController::class, 'destroy']
+        );
     });
 });

@@ -1,0 +1,501 @@
+{
+	"info": {
+		"_postman_id": "ae0dde5f-4b87-4d2f-b172-566f1377b6bb",
+		"name": "TrabajITO - Transiciones de Contratación",
+		"description": "Pruebas automáticas para API 21 - Transiciones de contratación.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "56497863"
+	},
+	"item": [
+		{
+			"name": "01 - Login cliente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.collectionVariables.set('authTokenCliente', b.data.token);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"correo\": \"{{correoCliente}}\",\n  \"password\": \"{{passwordCliente}}\",\n  \"device_name\": \"Postman Cliente\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "02 - Crear contratación flujo principal",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+							"const b = pm.response.json();",
+							"pm.collectionVariables.set('idContratacion', String(b.data.id_contratacion));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenCliente}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id_trabajador\": {{idTrabajador}},\n  \"descripcion_servicio\": \"Prueba flujo completo de contratación\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "03 - Crear contratación para cancelación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+							"const b = pm.response.json();",
+							"pm.collectionVariables.set('idContratacionCancelar', String(b.data.id_contratacion));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenCliente}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id_trabajador\": {{idTrabajador}},\n  \"descripcion_servicio\": \"Contratación para cancelación\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "04 - Login trabajador",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.collectionVariables.set('authTokenTrabajador', b.data.token);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"correo\": \"{{correoTrabajador}}\",\n  \"password\": \"{{passwordTrabajador}}\",\n  \"device_name\": \"Postman Trabajador\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "05 - Aceptar contratación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.test('Estado aceptado', () => pm.expect(b.data.estado.id_estado_contratacion).to.eql(2));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones/{{idContratacion}}/aceptar",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones",
+						"{{idContratacion}}",
+						"aceptar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "06 - Iniciar contratación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.test('Estado en proceso', () => pm.expect(b.data.estado.id_estado_contratacion).to.eql(4));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones/{{idContratacion}}/iniciar",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones",
+						"{{idContratacion}}",
+						"iniciar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "07 - Finalizar contratación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.test('Estado finalizado', () => pm.expect(b.data.estado.id_estado_contratacion).to.eql(5));",
+							"pm.test('Fecha finalizacion presente', () => pm.expect(b.data.fecha_finalizacion).to.not.eql(null));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones/{{idContratacion}}/finalizar",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones",
+						"{{idContratacion}}",
+						"finalizar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "08 - Transición inválida",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+							"const b = pm.response.json();",
+							"pm.test('Error esperado', () => pm.expect(b.error_code).to.eql('INVALID_HIRING_TRANSITION'));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones/{{idContratacion}}/aceptar",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones",
+						"{{idContratacion}}",
+						"aceptar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "09 - Cancelar contratación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.test('Estado cancelado', () => pm.expect(b.data.estado.id_estado_contratacion).to.eql(6));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authTokenTrabajador}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/contrataciones/{{idContratacionCancelar}}/cancelar",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"contrataciones",
+						"{{idContratacionCancelar}}",
+						"cancelar"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://127.0.0.1:8000/api/v1"
+		},
+		{
+			"key": "authTokenCliente",
+			"value": ""
+		},
+		{
+			"key": "authTokenTrabajador",
+			"value": ""
+		},
+		{
+			"key": "correoCliente",
+			"value": "cliente@trabajito.test"
+		},
+		{
+			"key": "passwordCliente",
+			"value": "Cliente12345!"
+		},
+		{
+			"key": "correoTrabajador",
+			"value": "trabajador1@trabajito.test"
+		},
+		{
+			"key": "passwordTrabajador",
+			"value": "Trabajador12345!"
+		},
+		{
+			"key": "idTrabajador",
+			"value": "1"
+		},
+		{
+			"key": "idContratacion",
+			"value": ""
+		},
+		{
+			"key": "idContratacionCancelar",
+			"value": ""
+		}
+	]
+}
