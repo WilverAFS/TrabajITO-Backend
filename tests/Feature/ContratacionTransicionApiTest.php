@@ -8,12 +8,12 @@ use App\Models\EstadoContratacion;
 use App\Models\Municipio;
 use App\Models\PerfilProfesional;
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ContratacionTransicionApiTest extends TestCase
 {
-    use DatabaseTruncation;
+    use RefreshDatabase;
 
     protected function setUp(): void
     {

@@ -1,0 +1,67 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/reportes"
+method: POST
+body:
+  type: json
+  content: "\r
+
+    {\r
+
+    \  \"tipo_objetivo\": \"INVALIDO\",\r
+
+    \  \"id_objetivo\": 0,\r
+
+    \  \"motivo\": \"\",\r
+
+    \  \"descripcion\": \"\"\r
+
+    }\r
+
+    \r\n"
+auth:
+  type: bearer
+  credentials:
+    token: "{{token_cliente}}"
+scripts:
+  - type: afterResponse
+    code: "\r
+
+      pm.test('Devuelve 422 por datos inválidos', function () {\r
+
+      \    pm.response.to.have.status(422);\r
+
+      });\r
+
+      \r
+
+      pm.test('Devuelve el código VALIDATION_ERROR', function () {\r
+
+      \    const json = pm.response.json();\r
+
+      \r
+
+      \    pm.expect(json.success).to.eql(false);\r
+
+      \    pm.expect(json.error_code).to.eql('VALIDATION_ERROR');\r
+
+      });\r
+
+      \r
+
+      pm.test('Valida los cuatro campos obligatorios', function () {\r
+
+      \    const json = pm.response.json();\r
+
+      \r
+
+      \    pm.expect(json.errors).to.have.property('tipo_objetivo');\r
+
+      \    pm.expect(json.errors).to.have.property('id_objetivo');\r
+
+      \    pm.expect(json.errors).to.have.property('motivo');\r
+
+      \    pm.expect(json.errors).to.have.property('descripcion');\r
+
+      });\r\n"
+    language: text/javascript
+order: 1154

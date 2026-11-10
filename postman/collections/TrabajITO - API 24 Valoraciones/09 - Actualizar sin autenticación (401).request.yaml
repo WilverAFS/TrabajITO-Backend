@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/valoraciones/{{id_valoracion}}"
+method: PATCH
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: '{"calificacion":3}'
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: pm.test('Actualizar sin token devuelve 401', function () { pm.response.to.have.status(401); });
+    language: text/javascript
+order: 9000

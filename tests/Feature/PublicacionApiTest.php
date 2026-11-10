@@ -10,12 +10,12 @@ use App\Models\PerfilProfesional;
 use App\Models\Publicacion;
 use App\Models\TipoPublicacion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PublicacionApiTest extends TestCase
 {
-    use DatabaseTruncation;
+    use RefreshDatabase;
 
     private User $cliente;
 

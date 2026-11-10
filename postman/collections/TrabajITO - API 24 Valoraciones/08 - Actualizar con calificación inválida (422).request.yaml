@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/valoraciones/{{id_valoracion}}"
+method: PATCH
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: '{"calificacion":6}'
+scripts:
+  - type: afterResponse
+    code: pm.test('Calificación 6 devuelve 422', function () { pm.response.to.have.status(422); });
+    language: text/javascript
+order: 8000

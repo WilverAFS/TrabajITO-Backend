@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/publicaciones/{{id_publicacion}}/valoracion"
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: '{"calificacion":5,"comentario":"Excelente servicio, trabajo terminado correctamente."}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Creación devuelve 201', function () { pm.response.to.have.status(201); });
+      var json = pm.response.json();
+      pm.test('Valoración creada correctamente', function () { pm.expect(json.success).to.eql(true); pm.expect(json.data.calificacion).to.eql(5); });
+      pm.test('Devuelve ID de valoración', function () { pm.expect(json.data.id_valoracion).to.be.a('number'); });
+      if (json.data && json.data.id_valoracion) { pm.environment.set('id_valoracion', String(json.data.id_valoracion)); }
+    language: text/javascript
+order: 5000

@@ -1,0 +1,65 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/reportes"
+method: POST
+headers:
+  Accept: "\tapplication/json"
+body:
+  type: json
+  content: "\r
+
+    {\r
+
+    \  \"tipo_objetivo\": \"PERFIL\",\r
+
+    \  \"id_objetivo\": 999999,\r
+
+    \  \"motivo\": \"Información falsa\",\r
+
+    \  \"descripcion\": \"Prueba de reporte para un perfil inexistente.\"\r
+
+    }\r\n"
+auth:
+  type: bearer
+  credentials:
+    token: "{{token_cliente}}"
+scripts:
+  - type: afterResponse
+    code: "\r
+
+      pm.test('Devuelve 404 por perfil inexistente', function () {\r
+
+      \    pm.response.to.have.status(404);\r
+
+      });\r
+
+      \r
+
+      pm.test('Devuelve REPORT_TARGET_NOT_FOUND', function () {\r
+
+      \    const json = pm.response.json();\r
+
+      \r
+
+      \    pm.expect(json.success).to.eql(false);\r
+
+      \    pm.expect(json.error_code).to.eql('REPORT_TARGET_NOT_FOUND');\r
+
+      });\r
+
+      \r
+
+      pm.test('No encuentra el objetivo del reporte', function () {\r
+
+      \    const json = pm.response.json();\r
+
+      \r
+
+      \    pm.expect(json.message).to.eql(\r
+
+      \        'El objetivo del reporte no existe.'\r
+
+      \    );\r
+
+      });\r\n"
+    language: text/javascript
+order: 951

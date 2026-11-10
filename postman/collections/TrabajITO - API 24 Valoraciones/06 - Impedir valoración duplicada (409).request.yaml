@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/publicaciones/{{id_publicacion}}/valoracion"
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: '{"calificacion":4,"comentario":"Valoración duplicada"}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Duplicada devuelve 409', function () { pm.response.to.have.status(409); });
+      pm.test('Código RATING_ALREADY_EXISTS', function () { pm.expect(pm.response.json().error_code).to.eql('RATING_ALREADY_EXISTS'); });
+    language: text/javascript
+order: 6000

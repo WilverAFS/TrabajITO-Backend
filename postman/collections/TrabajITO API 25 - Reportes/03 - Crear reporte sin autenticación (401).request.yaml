@@ -1,0 +1,45 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/reportes"
+method: POST
+headers:
+  Accept: application/json
+body:
+  type: json
+  content: "\r
+
+    {\r
+
+    \  \"tipo_objetivo\": \"PUBLICACION\",\r
+
+    \  \"id_objetivo\": 2,\r
+
+    \  \"motivo\": \"Contenido engañoso\",\r
+
+    \  \"descripcion\": \"Esta publicación contiene información incorrecta.\"\r
+
+    }\r\n"
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: "\r
+
+      pm.test('Devuelve 401 sin autenticación', function () {\r
+
+      \    pm.response.to.have.status(401);\r
+
+      });\r
+
+      \r
+
+      pm.test('Indica que el usuario no está autenticado', function () {\r
+
+      \    const json = pm.response.json();\r
+
+      \r
+
+      \    pm.expect(json.message).to.eql('Unauthenticated.');\r
+
+      });\r\n"
+    language: text/javascript
+order: 638

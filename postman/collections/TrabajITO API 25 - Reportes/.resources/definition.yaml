@@ -1,0 +1,6 @@
+$kind: collection
+variables:
+  base_url: ""
+  token_cliente: ""
+  correo_cliente: ""
+  password_cliente: ""

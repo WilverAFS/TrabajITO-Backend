@@ -1,0 +1,71 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/reportes"
+method: POST
+body:
+  type: json
+  content: "\r
+
+    {\r
+
+    \  \"tipo_objetivo\": \"PUBLICACION\",\r
+
+    \  \"id_objetivo\": 2,\r
+
+    \  \"motivo\": \"Contenido engañoso\",\r
+
+    \  \"descripcion\": \"Esta publicación contiene información incorrecta.\"\r
+
+    }\r\n"
+auth:
+  type: bearer
+  credentials:
+    token: "{{token_cliente}}"
+scripts:
+  - type: afterResponse
+    code: "\r
+
+      pm.test('Devuelve 201 al crear reporte', function () {\r
+
+      \    pm.response.to.have.status(201);\r
+
+      });\r
+
+      \r
+
+      pm.test('El reporte se crea correctamente', function () {\r
+
+      \    const json = pm.response.json();\r
+
+      \r
+
+      \    pm.expect(json.success).to.eql(true);\r
+
+      \    pm.expect(json.data.tipo_objetivo).to.eql('PUBLICACION');\r
+
+      });\r
+
+      \r
+
+      pm.test('El reporte inicia como Pendiente', function () {\r
+
+      \    const json = pm.response.json();\r
+
+      \r
+
+      \    pm.expect(json.data.estado.estado_reporte).to.eql('Pendiente');\r
+
+      });\r
+
+      \r
+
+      pm.test('Devuelve el ID del reporte', function () {\r
+
+      \    const json = pm.response.json();\r
+
+      \r
+
+      \    pm.expect(json.data.id_reporte).to.be.a('number');\r
+
+      });\r\n"
+    language: text/javascript
+order: 506

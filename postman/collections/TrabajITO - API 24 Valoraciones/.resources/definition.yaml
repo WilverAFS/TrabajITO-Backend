@@ -1,0 +1,8 @@
+$kind: collection
+description: Pruebas de creación y actualización de valoraciones. Requiere una publicación visible, de una contratación finalizada, que todavía no tenga valoración.
+auth:
+  - id: 8fd994a1-4413-4fe2-8fc4-3d36f71c30a0
+    type: bearer
+    name: bearer auth
+    credentials:
+      token: "{{token_cliente}}"
