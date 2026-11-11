@@ -3,6 +3,7 @@ url: "{{base_url}}/api/v1/reportes"
 method: POST
 headers:
   Accept: "\tapplication/json"
+  Content-Type: application/json
 body:
   type: json
   content: "\r
@@ -24,42 +25,25 @@ auth:
     token: "{{token_cliente}}"
 scripts:
   - type: afterResponse
-    code: "\r
+    code: |
 
-      pm.test('Devuelve 404 por perfil inexistente', function () {\r
+      pm.test('Devuelve 404 por perfil inexistente', function () {
+          pm.response.to.have.status(404);
+      });
 
-      \    pm.response.to.have.status(404);\r
+      pm.test('Devuelve RESOURCE_NOT_FOUND', function () {
+          const json = pm.response.json();
 
-      });\r
+          pm.expect(json.success).to.eql(false);
+          pm.expect(json.error_code).to.eql('RESOURCE_NOT_FOUND');
+      });
 
-      \r
+      pm.test('No encuentra el objetivo del reporte', function () {
+          const json = pm.response.json();
 
-      pm.test('Devuelve REPORT_TARGET_NOT_FOUND', function () {\r
-
-      \    const json = pm.response.json();\r
-
-      \r
-
-      \    pm.expect(json.success).to.eql(false);\r
-
-      \    pm.expect(json.error_code).to.eql('REPORT_TARGET_NOT_FOUND');\r
-
-      });\r
-
-      \r
-
-      pm.test('No encuentra el objetivo del reporte', function () {\r
-
-      \    const json = pm.response.json();\r
-
-      \r
-
-      \    pm.expect(json.message).to.eql(\r
-
-      \        'El objetivo del reporte no existe.'\r
-
-      \    );\r
-
-      });\r\n"
+          pm.expect(json.message).to.eql(
+              'El objetivo del reporte no existe.'
+          );
+      });
     language: text/javascript
-order: 951
+order: 5000

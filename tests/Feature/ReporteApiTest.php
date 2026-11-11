@@ -115,7 +115,7 @@ class ReporteApiTest extends TestCase
             ->assertStatus(404)
             ->assertJsonPath(
                 'error_code',
-                'REPORT_TARGET_NOT_FOUND'
+                'RESOURCE_NOT_FOUND'
             );
 
         $this->assertDatabaseCount('reportes', 0);
@@ -237,7 +237,7 @@ public function test_no_permite_reportar_una_publicacion_inexistente(): void
         ->assertJsonPath('success', false)
         ->assertJsonPath(
             'error_code',
-            'REPORT_TARGET_NOT_FOUND'
+            'RESOURCE_NOT_FOUND'
         );
 
     // Verificar que no se haya creado ningún reporte.

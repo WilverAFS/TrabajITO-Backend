@@ -2,8 +2,12 @@ $kind: http-request
 url: "{{base_url}}/api/v1/auth/login"
 method: POST
 headers:
-  Accept: application/json
-  Content-Type: application/json
+  - key: Accept
+    value: application/json
+    disabled: false
+  - key: Content-Type
+    value: application/json
+    disabled: true
 body:
   type: urlencoded
   content:
@@ -15,13 +19,12 @@ auth:
 scripts:
   - type: beforeRequest
     code: |
-      pm.environment.unset('token_cliente');
-      pm.environment.unset('id_valoracion');
 
+      pm.collectionVariables.unset('token_cliente');
+      pm.collectionVariables.unset('id_valoracion');
 
-
-      const correo = pm.environment.get('correo_cliente');
-      const password = pm.environment.get('password_cliente');
+      const correo = pm.collectionVariables.get('correo_cliente');
+      const password = pm.collectionVariables.get('password_cliente');
 
       pm.request.body.urlencoded.upsert({
           key: 'correo',
@@ -30,17 +33,32 @@ scripts:
 
       pm.request.body.urlencoded.upsert({
           key: 'password',
-          value: String(password ?? '').trim()
+          value: String(password ?? '')
       });
     language: text/javascript
   - type: afterResponse
-    code: |+
-      pm.test('Login devuelve 200', function () { pm.response.to.have.status(200); });
-      var json = {};
-      try { json = pm.response.json(); } catch (e) {}
-      var token = (json.data && (json.data.token || json.data.access_token)) || json.token;
-      pm.test('Login devuelve token', function () { pm.expect(token).to.be.a('string').and.not.empty; });
-      if (token) { pm.environment.set('token_cliente', token); }
+    code: |
 
+      pm.test('Login devuelve 200', function () {
+          pm.response.to.have.status(200);
+      });
+
+      let json = {};
+
+      try {
+          json = pm.response.json();
+      } catch (e) {}
+
+      const token =
+          (json.data && (json.data.token || json.data.access_token))
+          || json.token;
+
+      pm.test('Login devuelve token', function () {
+          pm.expect(token).to.be.a('string').and.not.empty;
+      });
+
+      if (token) {
+          pm.collectionVariables.set('token_cliente', token);
+      }
     language: text/javascript
 order: 1000

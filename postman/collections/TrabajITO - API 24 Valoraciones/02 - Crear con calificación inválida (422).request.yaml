@@ -7,6 +7,10 @@ headers:
 body:
   type: json
   content: '{"calificacion":0,"comentario":"Prueba de validación"}'
+auth:
+  type: bearer
+  credentials:
+    token: "{{token_cliente}}"
 scripts:
   - type: afterResponse
     code: pm.test('Calificación 0 devuelve 422', function () { pm.response.to.have.status(422); });

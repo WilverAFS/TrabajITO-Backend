@@ -1,6 +1,9 @@
 $kind: http-request
 url: "{{base_url}}/api/v1/reportes"
 method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
 body:
   type: json
   content: "\r
@@ -24,44 +27,26 @@ auth:
     token: "{{token_cliente}}"
 scripts:
   - type: afterResponse
-    code: "\r
+    code: |
 
-      pm.test('Devuelve 422 por datos inválidos', function () {\r
+      pm.test('Devuelve 422 por datos inválidos', function () {
+          pm.response.to.have.status(422);
+      });
 
-      \    pm.response.to.have.status(422);\r
+      pm.test('Devuelve el código VALIDATION_ERROR', function () {
+          const json = pm.response.json();
 
-      });\r
+          pm.expect(json.success).to.eql(false);
+          pm.expect(json.error_code).to.eql('VALIDATION_ERROR');
+      });
 
-      \r
+      pm.test('Valida los cuatro campos obligatorios', function () {
+          const json = pm.response.json();
 
-      pm.test('Devuelve el código VALIDATION_ERROR', function () {\r
-
-      \    const json = pm.response.json();\r
-
-      \r
-
-      \    pm.expect(json.success).to.eql(false);\r
-
-      \    pm.expect(json.error_code).to.eql('VALIDATION_ERROR');\r
-
-      });\r
-
-      \r
-
-      pm.test('Valida los cuatro campos obligatorios', function () {\r
-
-      \    const json = pm.response.json();\r
-
-      \r
-
-      \    pm.expect(json.errors).to.have.property('tipo_objetivo');\r
-
-      \    pm.expect(json.errors).to.have.property('id_objetivo');\r
-
-      \    pm.expect(json.errors).to.have.property('motivo');\r
-
-      \    pm.expect(json.errors).to.have.property('descripcion');\r
-
-      });\r\n"
+          pm.expect(json.errors).to.have.property('tipo_objetivo');
+          pm.expect(json.errors).to.have.property('id_objetivo');
+          pm.expect(json.errors).to.have.property('motivo');
+          pm.expect(json.errors).to.have.property('descripcion');
+      });
     language: text/javascript
-order: 1154
+order: 6000

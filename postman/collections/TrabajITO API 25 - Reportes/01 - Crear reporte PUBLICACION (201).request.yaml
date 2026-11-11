@@ -1,6 +1,9 @@
 $kind: http-request
 url: "{{base_url}}/api/v1/reportes"
 method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
 body:
   type: json
   content: "\r
@@ -22,50 +25,29 @@ auth:
     token: "{{token_cliente}}"
 scripts:
   - type: afterResponse
-    code: "\r
+    code: |
 
-      pm.test('Devuelve 201 al crear reporte', function () {\r
+      pm.test('Devuelve 201 al crear reporte', function () {
+          pm.response.to.have.status(201);
+      });
 
-      \    pm.response.to.have.status(201);\r
+      pm.test('El reporte se crea correctamente', function () {
+          const json = pm.response.json();
 
-      });\r
+          pm.expect(json.success).to.eql(true);
+          pm.expect(json.data.tipo_objetivo).to.eql('PUBLICACION');
+      });
 
-      \r
+      pm.test('El reporte inicia como Pendiente', function () {
+          const json = pm.response.json();
 
-      pm.test('El reporte se crea correctamente', function () {\r
+          pm.expect(json.data.estado.estado_reporte).to.eql('Pendiente');
+      });
 
-      \    const json = pm.response.json();\r
+      pm.test('Devuelve el ID del reporte', function () {
+          const json = pm.response.json();
 
-      \r
-
-      \    pm.expect(json.success).to.eql(true);\r
-
-      \    pm.expect(json.data.tipo_objetivo).to.eql('PUBLICACION');\r
-
-      });\r
-
-      \r
-
-      pm.test('El reporte inicia como Pendiente', function () {\r
-
-      \    const json = pm.response.json();\r
-
-      \r
-
-      \    pm.expect(json.data.estado.estado_reporte).to.eql('Pendiente');\r
-
-      });\r
-
-      \r
-
-      pm.test('Devuelve el ID del reporte', function () {\r
-
-      \    const json = pm.response.json();\r
-
-      \r
-
-      \    pm.expect(json.data.id_reporte).to.be.a('number');\r
-
-      });\r\n"
+          pm.expect(json.data.id_reporte).to.be.a('number');
+      });
     language: text/javascript
-order: 506
+order: 2000

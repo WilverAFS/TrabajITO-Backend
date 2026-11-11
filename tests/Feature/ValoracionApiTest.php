@@ -226,7 +226,7 @@ class ValoracionApiTest extends TestCase
             ->assertNotFound()
             ->assertJsonPath(
                 'error_code',
-                'PUBLICATION_NOT_FOUND'
+                'RESOURCE_NOT_FOUND'
             );
     }
 
@@ -242,7 +242,7 @@ class ValoracionApiTest extends TestCase
             ->assertForbidden()
             ->assertJsonPath(
                 'error_code',
-                'RATING_ACCESS_DENIED'
+                'NOT_HIRING_CLIENT'
             );
 
         $this->assertDatabaseCount('valoraciones', 0);
@@ -273,7 +273,7 @@ class ValoracionApiTest extends TestCase
             ->assertStatus(409)
             ->assertJsonPath(
                 'error_code',
-                'HIRING_NOT_FINISHED'
+                'HIRING_NOT_COMPLETED'
             );
 
         $this->assertDatabaseCount('valoraciones', 0);
@@ -363,7 +363,7 @@ class ValoracionApiTest extends TestCase
             ->assertForbidden()
             ->assertJsonPath(
                 'error_code',
-                'RATING_ACCESS_DENIED'
+                'FORBIDDEN'
             );
 
         $this->assertDatabaseHas('valoraciones', [
@@ -388,7 +388,7 @@ class ValoracionApiTest extends TestCase
             ->assertStatus(409)
             ->assertJsonPath(
                 'error_code',
-                'PUBLICATION_NOT_VISIBLE'
+                'OPERATION_FAILED'
             );
 
         $this->assertDatabaseHas('valoraciones', [
@@ -408,7 +408,7 @@ class ValoracionApiTest extends TestCase
             ->assertNotFound()
             ->assertJsonPath(
                 'error_code',
-                'RATING_NOT_FOUND'
+                'RESOURCE_NOT_FOUND'
             );
     }
 

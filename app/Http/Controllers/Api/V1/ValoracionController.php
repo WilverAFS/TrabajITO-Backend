@@ -18,7 +18,7 @@ class ValoracionController extends Controller
      */
     public function store(
         CrearValoracionRequest $request,
-        int $id_publicacion
+        string $id_publicacion
     ): JsonResponse {
         return DB::transaction(function () use (
             $request,
@@ -35,7 +35,7 @@ class ValoracionController extends Controller
             if (! $publicacion) {
                 return $this->error(
                     'Publicación no encontrada.',
-                    'PUBLICATION_NOT_FOUND',
+                    'RESOURCE_NOT_FOUND',
                     404
                 );
             }
@@ -45,7 +45,7 @@ class ValoracionController extends Controller
             if (! $contratacion) {
                 return $this->error(
                     'La publicación no tiene una contratación válida.',
-                    'HIRING_NOT_FOUND',
+                    'RESOURCE_NOT_FOUND',
                     404
                 );
             }
@@ -59,7 +59,7 @@ class ValoracionController extends Controller
             ) {
                 return $this->error(
                     'No tienes permiso para valorar esta publicación.',
-                    'RATING_ACCESS_DENIED',
+                    'NOT_HIRING_CLIENT',
                     403
                 );
             }
@@ -70,7 +70,7 @@ class ValoracionController extends Controller
             ) {
                 return $this->error(
                     'La contratación debe estar finalizada para poder valorar.',
-                    'HIRING_NOT_FINISHED',
+                    'HIRING_NOT_COMPLETED',
                     409
                 );
             }
@@ -109,7 +109,7 @@ class ValoracionController extends Controller
      */
     public function update(
         ActualizarValoracionRequest $request,
-        int $id_valoracion
+        string $id_valoracion
     ): JsonResponse {
         $valoracion = Valoracion::query()
             ->with('publicacion')
@@ -118,7 +118,7 @@ class ValoracionController extends Controller
         if (! $valoracion) {
             return $this->error(
                 'Valoración no encontrada.',
-                'RATING_NOT_FOUND',
+                'RESOURCE_NOT_FOUND',
                 404
             );
         }
@@ -132,22 +132,30 @@ class ValoracionController extends Controller
         ) {
             return $this->error(
                 'No tienes permiso para actualizar esta valoración.',
-                'RATING_ACCESS_DENIED',
+                'FORBIDDEN',
                 403
             );
         }
 
-        // La publicación debe existir y seguir visible.
-        if (
-            ! $valoracion->publicacion ||
-            ! $valoracion->publicacion->visible
-        ) {
+
+        // La publicación asociada debe existir.
+        if (! $valoracion->publicacion) {
+            return $this->error(
+                'La publicación asociada a la valoración no existe.',
+                'RESOURCE_NOT_FOUND',
+                404
+            );
+        }
+
+        // La publicación debe permanecer visible.
+        if (! $valoracion->publicacion->visible) {
             return $this->error(
                 'No se puede actualizar la valoración porque la publicación no está disponible.',
-                'PUBLICATION_NOT_VISIBLE',
+                'OPERATION_FAILED',
                 409
             );
         }
+
 
         $datos = $request->validated();
 

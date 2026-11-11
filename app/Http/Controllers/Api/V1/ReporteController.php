@@ -39,26 +39,29 @@ class ReporteController extends Controller
                 ->exists();
         }
 
-        if (! $existe) {
-            return $this->error(
-                'El objetivo del reporte no existe.',
-                'REPORT_TARGET_NOT_FOUND',
-                404
-            );
-        }
+
+if (! $existe) {
+    return $this->error(
+        'El objetivo del reporte no existe.',
+        'RESOURCE_NOT_FOUND',
+        404
+    );
+}
+
 
         // Obtener el estado inicial Pendiente.
         $estadoPendiente = EstadoReporte::query()
             ->conNombre('Pendiente')
             ->first();
 
-        if (! $estadoPendiente) {
-            return $this->error(
-                'No se encuentra configurado el estado Pendiente.',
-                'REPORT_STATUS_NOT_CONFIGURED',
-                500
-            );
-        }
+if (! $estadoPendiente) {
+    return $this->error(
+        'No se encuentra configurado el estado Pendiente.',
+        'OPERATION_FAILED',
+        500
+    );
+}
+
 
         // Obtener al denunciante del usuario autenticado.
         $usuario = $request->user();
