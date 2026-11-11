@@ -11,14 +11,14 @@ use App\Models\PerfilProfesional;
 use App\Models\Publicacion;
 use App\Models\TipoPublicacion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class EvidenciaApiTest extends TestCase
 {
-    use DatabaseTruncation;
+    use RefreshDatabase;
 
     private User $cliente;
 

@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/valoraciones/999999999"
+method: PATCH
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: '{"calificacion":4}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Valoración inexistente devuelve 404', function () { pm.response.to.have.status(404); });
+      pm.test('Código RESOURCE_NOT_FOUND', function () { pm.expect(pm.response.json().error_code).to.eql('RESOURCE_NOT_FOUND'); });
+    language: text/javascript
+order: 10000

@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/publicaciones/{{id_publicacion}}/valoracion"
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: '{"calificacion":0,"comentario":"Prueba de validación"}'
+auth:
+  type: bearer
+  credentials:
+    token: "{{token_cliente}}"
+scripts:
+  - type: afterResponse
+    code: pm.test('Calificación 0 devuelve 422', function () { pm.response.to.have.status(422); });
+    language: text/javascript
+order: 2000

@@ -1,0 +1,54 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/auth/login"
+method: POST
+headers:
+  Accept: application/json
+body:
+  type: urlencoded
+  content:
+    correo: "{{correo_cliente}}"
+    password: "{{password_cliente}}"
+    device_name: Postman API 25
+scripts:
+  - type: beforeRequest
+    code: |
+
+      const correo = pm.collectionVariables.get('correo_cliente');
+      const password = pm.collectionVariables.get('password_cliente');
+
+      pm.request.body.urlencoded.upsert({
+          key: 'correo',
+          value: String(correo ?? '').trim()
+      });
+
+      pm.request.body.urlencoded.upsert({
+          key: 'password',
+          value: String(password ?? '')
+      });
+    language: text/javascript
+  - type: afterResponse
+    code: |
+
+      pm.test('Login devuelve 200', function () {
+          pm.response.to.have.status(200);
+      });
+
+      let json = {};
+
+      try {
+          json = pm.response.json();
+      } catch (e) {}
+
+      const token =
+          (json.data && (json.data.token || json.data.access_token))
+          || json.token;
+
+      pm.test('Login devuelve token', function () {
+          pm.expect(token).to.be.a('string').and.not.empty;
+      });
+
+      if (token) {
+          pm.collectionVariables.set('token_cliente', token);
+      }
+    language: text/javascript
+order: 1000

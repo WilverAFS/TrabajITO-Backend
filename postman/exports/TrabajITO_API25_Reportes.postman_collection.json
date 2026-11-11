@@ -1,0 +1,438 @@
+{
+  "info": {
+    "name": "TrabajITO API 25 - Reportes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00 - Iniciar sesión como cliente",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/v1/auth/login",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "correo",
+              "value": "{{correo_cliente}}"
+            },
+            {
+              "key": "password",
+              "value": "{{password_cliente}}"
+            },
+            {
+              "key": "device_name",
+              "value": "Postman API 25"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "",
+              "const correo = pm.collectionVariables.get('correo_cliente');",
+              "const password = pm.collectionVariables.get('password_cliente');",
+              "",
+              "pm.request.body.urlencoded.upsert({",
+              "    key: 'correo',",
+              "    value: String(correo ?? '').trim()",
+              "});",
+              "",
+              "pm.request.body.urlencoded.upsert({",
+              "    key: 'password',",
+              "    value: String(password ?? '')",
+              "});",
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "",
+              "pm.test('Login devuelve 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "let json = {};",
+              "",
+              "try {",
+              "    json = pm.response.json();",
+              "} catch (e) {}",
+              "",
+              "const token =",
+              "    (json.data && (json.data.token || json.data.access_token))",
+              "    || json.token;",
+              "",
+              "pm.test('Login devuelve token', function () {",
+              "    pm.expect(token).to.be.a('string').and.not.empty;",
+              "});",
+              "",
+              "if (token) {",
+              "    pm.collectionVariables.set('token_cliente', token);",
+              "}",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - Crear reporte PUBLICACION (201)",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/v1/reportes",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "\r\n{\r\n  \"tipo_objetivo\": \"PUBLICACION\",\r\n  \"id_objetivo\": 2,\r\n  \"motivo\": \"Contenido engañoso\",\r\n  \"descripcion\": \"Esta publicación contiene información incorrecta.\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token_cliente}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "",
+              "pm.test('Devuelve 201 al crear reporte', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('El reporte se crea correctamente', function () {",
+              "    const json = pm.response.json();",
+              "",
+              "    pm.expect(json.success).to.eql(true);",
+              "    pm.expect(json.data.tipo_objetivo).to.eql('PUBLICACION');",
+              "});",
+              "",
+              "pm.test('El reporte inicia como Pendiente', function () {",
+              "    const json = pm.response.json();",
+              "",
+              "    pm.expect(json.data.estado.estado_reporte).to.eql('Pendiente');",
+              "});",
+              "",
+              "pm.test('Devuelve el ID del reporte', function () {",
+              "    const json = pm.response.json();",
+              "",
+              "    pm.expect(json.data.id_reporte).to.be.a('number');",
+              "});",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Crear reporte PERFIL (201)",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/v1/reportes",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "\r\n{\r\n  \"tipo_objetivo\": \"PERFIL\",\r\n  \"id_objetivo\": 1,\r\n  \"motivo\": \"Información falsa\",\r\n  \"descripcion\": \"El perfil profesional contiene información engañosa.\"\r\n}\r\n\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token_cliente}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "",
+              "pm.test('Devuelve 201 al crear reporte de perfil', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('El reporte corresponde a un PERFIL', function () {",
+              "    const json = pm.response.json();",
+              "",
+              "    pm.expect(json.success).to.eql(true);",
+              "    pm.expect(json.data.tipo_objetivo).to.eql('PERFIL');",
+              "});",
+              "",
+              "pm.test('El reporte inicia como Pendiente', function () {",
+              "    const json = pm.response.json();",
+              "",
+              "    pm.expect(json.data.estado.estado_reporte).to.eql('Pendiente');",
+              "});",
+              "",
+              "pm.test('Devuelve el ID del reporte', function () {",
+              "    const json = pm.response.json();",
+              "",
+              "    pm.expect(json.data.id_reporte).to.be.a('number');",
+              "});",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Crear reporte sin autenticación (401)",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/v1/reportes",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "\r\n{\r\n  \"tipo_objetivo\": \"PUBLICACION\",\r\n  \"id_objetivo\": 2,\r\n  \"motivo\": \"Contenido engañoso\",\r\n  \"descripcion\": \"Esta publicación contiene información incorrecta.\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "",
+              "pm.test('Devuelve 401 sin autenticación', function () {",
+              "    pm.response.to.have.status(401);",
+              "});",
+              "",
+              "pm.test('Indica que el usuario no está autenticado', function () {",
+              "    const json = pm.response.json();",
+              "",
+              "    pm.expect(json.message).to.eql('Unauthenticated.');",
+              "});",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Reportar perfil inexistente (404)",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/v1/reportes",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "\tapplication/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "\r\n{\r\n  \"tipo_objetivo\": \"PERFIL\",\r\n  \"id_objetivo\": 999999,\r\n  \"motivo\": \"Información falsa\",\r\n  \"descripcion\": \"Prueba de reporte para un perfil inexistente.\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token_cliente}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "",
+              "pm.test('Devuelve 404 por perfil inexistente', function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test('Devuelve RESOURCE_NOT_FOUND', function () {",
+              "    const json = pm.response.json();",
+              "",
+              "    pm.expect(json.success).to.eql(false);",
+              "    pm.expect(json.error_code).to.eql('RESOURCE_NOT_FOUND');",
+              "});",
+              "",
+              "pm.test('No encuentra el objetivo del reporte', function () {",
+              "    const json = pm.response.json();",
+              "",
+              "    pm.expect(json.message).to.eql(",
+              "        'El objetivo del reporte no existe.'",
+              "    );",
+              "});",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Datos inválidos (422)",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/v1/reportes",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "\r\n{\r\n  \"tipo_objetivo\": \"INVALIDO\",\r\n  \"id_objetivo\": 0,\r\n  \"motivo\": \"\",\r\n  \"descripcion\": \"\"\r\n}\r\n\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token_cliente}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "",
+              "pm.test('Devuelve 422 por datos inválidos', function () {",
+              "    pm.response.to.have.status(422);",
+              "});",
+              "",
+              "pm.test('Devuelve el código VALIDATION_ERROR', function () {",
+              "    const json = pm.response.json();",
+              "",
+              "    pm.expect(json.success).to.eql(false);",
+              "    pm.expect(json.error_code).to.eql('VALIDATION_ERROR');",
+              "});",
+              "",
+              "pm.test('Valida los cuatro campos obligatorios', function () {",
+              "    const json = pm.response.json();",
+              "",
+              "    pm.expect(json.errors).to.have.property('tipo_objetivo');",
+              "    pm.expect(json.errors).to.have.property('id_objetivo');",
+              "    pm.expect(json.errors).to.have.property('motivo');",
+              "    pm.expect(json.errors).to.have.property('descripcion');",
+              "});",
+              ""
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "token_cliente",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "correo_cliente",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "password_cliente",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

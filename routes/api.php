@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\V1\ContratacionController;
 use App\Http\Controllers\Api\V1\ContratacionTransicionController;
 use App\Http\Controllers\Api\V1\PublicacionController;
 use App\Http\Controllers\Api\V1\EvidenciaController;
+use App\Http\Controllers\Api\V1\ValoracionController;
+use App\Http\Controllers\Api\V1\ReporteController;
 
 Route::prefix('v1')->group(function () {
 
@@ -272,6 +274,7 @@ Route::prefix('v1')->group(function () {
          * EVIDENCIAS
          */
         // Cargar evidencias a una publicación
+
         Route::post(
             '/publicaciones/{id_publicacion}/evidencias',
             [EvidenciaController::class, 'store']
@@ -282,5 +285,35 @@ Route::prefix('v1')->group(function () {
             '/evidencias/{id_evidencia}',
             [EvidenciaController::class, 'destroy']
         );
+
+
+        /**
+         * API 24 - VALORACIONES
+         */
+
+        // Crear valoración de una publicación.
+        Route::post(
+            '/publicaciones/{id_publicacion}/valoracion',
+            [ValoracionController::class, 'store']
+        );
+
+        // Actualizar una valoración propia.
+        Route::patch(
+            '/valoraciones/{id_valoracion}',
+            [ValoracionController::class, 'update']
+        );
+
+
+/**
+ * API 25 - REPORTES
+ */
+
+// Crear un reporte de publicación o perfil profesional.
+Route::post(
+    '/reportes',
+    [ReporteController::class, 'store']
+);
+
+
     });
 });

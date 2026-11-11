@@ -1,0 +1,55 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/reportes"
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: "\r
+
+    {\r
+
+    \  \"tipo_objetivo\": \"PERFIL\",\r
+
+    \  \"id_objetivo\": 1,\r
+
+    \  \"motivo\": \"Información falsa\",\r
+
+    \  \"descripcion\": \"El perfil profesional contiene información engañosa.\"\r
+
+    }\r
+
+    \r\n"
+auth:
+  type: bearer
+  credentials:
+    token: "{{token_cliente}}"
+scripts:
+  - type: afterResponse
+    code: |
+
+      pm.test('Devuelve 201 al crear reporte de perfil', function () {
+          pm.response.to.have.status(201);
+      });
+
+      pm.test('El reporte corresponde a un PERFIL', function () {
+          const json = pm.response.json();
+
+          pm.expect(json.success).to.eql(true);
+          pm.expect(json.data.tipo_objetivo).to.eql('PERFIL');
+      });
+
+      pm.test('El reporte inicia como Pendiente', function () {
+          const json = pm.response.json();
+
+          pm.expect(json.data.estado.estado_reporte).to.eql('Pendiente');
+      });
+
+      pm.test('Devuelve el ID del reporte', function () {
+          const json = pm.response.json();
+
+          pm.expect(json.data.id_reporte).to.be.a('number');
+      });
+    language: text/javascript
+order: 3000

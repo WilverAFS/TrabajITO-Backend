@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/valoraciones/{{id_valoracion}}"
+method: PATCH
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: '{"comentario":"Comentario actualizado desde Postman."}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Actualización devuelve 200', function () { pm.response.to.have.status(200); });
+      pm.test('Conserva calificación 5', function () { pm.expect(pm.response.json().data.calificacion).to.eql(5); });
+      pm.test('Actualiza comentario', function () { pm.expect(pm.response.json().data.comentario).to.eql('Comentario actualizado desde Postman.'); });
+    language: text/javascript
+order: 7000

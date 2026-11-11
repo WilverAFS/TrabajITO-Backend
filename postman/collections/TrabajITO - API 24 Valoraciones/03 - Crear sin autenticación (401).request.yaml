@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{base_url}}/api/v1/publicaciones/{{id_publicacion}}/valoracion"
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: json
+  content: '{"calificacion":5}'
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    code: pm.test('Sin token devuelve 401', function () { pm.response.to.have.status(401); });
+    language: text/javascript
+order: 3000

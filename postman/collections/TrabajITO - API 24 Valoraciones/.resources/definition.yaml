@@ -1,0 +1,9 @@
+$kind: collection
+description: ""
+variables:
+  base_url: ""
+  correo_cliente: ""
+  password_cliente: ""
+  token_cliente: ""
+  id_publicacion: ""
+  id_valoracion: ""
