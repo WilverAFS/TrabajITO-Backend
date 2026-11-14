@@ -1,319 +1,117 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AccountController;
+use App\Http\Controllers\Api\V1\AdminUsuarioController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CatalogoController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\PerfilProfesionalController;
-use App\Http\Controllers\Api\V1\DisponibilidadController;
 use App\Http\Controllers\Api\V1\CertificadoController;
-use App\Http\Controllers\Api\V1\SolicitudHabilitacionController;
-use App\Http\Controllers\Api\V1\TrabajadorController;
 use App\Http\Controllers\Api\V1\ContratacionController;
 use App\Http\Controllers\Api\V1\ContratacionTransicionController;
-use App\Http\Controllers\Api\V1\PublicacionController;
+use App\Http\Controllers\Api\V1\DisponibilidadController;
 use App\Http\Controllers\Api\V1\EvidenciaController;
-use App\Http\Controllers\Api\V1\ValoracionController;
+use App\Http\Controllers\Api\V1\NotificacionController;
+use App\Http\Controllers\Api\V1\PerfilProfesionalController;
+use App\Http\Controllers\Api\V1\PublicacionController;
 use App\Http\Controllers\Api\V1\ReporteController;
+use App\Http\Controllers\Api\V1\SolicitudHabilitacionController;
+use App\Http\Controllers\Api\V1\TrabajadorController;
+use App\Http\Controllers\Api\V1\ValoracionController;
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+    // Registro e inicio de sesión.
+    Route::post('/auth/register', [AuthController::class, 'register'])
+        ->middleware('throttle:5,1');
+    Route::post('/auth/login', [AuthController::class, 'login'])
+        ->middleware('throttle:5,1');
 
-    // Registro
-    Route::post(
-        '/auth/register',
-        [AuthController::class, 'register']
-    )->middleware('throttle:5,1');
+    // Catálogos públicos.
+    Route::get('/estados', [CatalogoController::class, 'estados']);
+    Route::get('/estados/{id_estado}/municipios', [CatalogoController::class, 'municipios']);
+    Route::get('/oficios', [CatalogoController::class, 'oficios']);
 
-    // Inicio de sesión
-    Route::post(
-        '/auth/login',
-        [AuthController::class, 'login']
-    )->middleware('throttle:5,1');
+    // API 19: exploración pública de trabajadores.
+    Route::get('/trabajadores', [TrabajadorController::class, 'index']);
+    Route::get('/trabajadores/{id_trabajador}', [TrabajadorController::class, 'show']);
 
-    // Catálogos públicos
-    Route::get(
-        '/estados',
-        [CatalogoController::class, 'estados']
-    );
+    // Recuperación de contraseña.
+    Route::post('/auth/forgot-password', [AccountController::class, 'forgotPassword'])
+        ->middleware('throttle:5,1');
+    Route::post('/auth/reset-password', [AccountController::class, 'resetPassword'])
+        ->middleware('throttle:5,1');
 
-    Route::get(
-        '/estados/{id_estado}/municipios',
-        [CatalogoController::class, 'municipios']
-    );
+    // Consultas públicas de publicaciones.
+    Route::get('/publicaciones/{id_publicacion}', [PublicacionController::class, 'show']);
+    Route::get('/publicaciones/trabajador/{id_trabajador}', [PublicacionController::class, 'publicacionesPorTrabajador']);
 
-    Route::get(
-        '/oficios',
-        [CatalogoController::class, 'oficios']
-    );
-
-    // API 19 - Exploración pública de trabajadores
-
-    // Listar y buscar trabajadores habilitados
-    Route::get(
-        '/trabajadores',
-        [TrabajadorController::class, 'index']
-    );
-
-    // Consultar el perfil público de un trabajador
-    Route::get(
-        '/trabajadores/{id_trabajador}',
-        [TrabajadorController::class, 'show']
-    );
-
-
-    //Recuperar contraseña olvidada
-    Route::post(
-        '/auth/forgot-password',
-        [AccountController::class, 'forgotPassword']
-    )->middleware('throttle:5,1');
-
-    //Reestrablecer contraseña
-    Route::post(
-        '/auth/reset-password',
-        [AccountController::class, 'resetPassword']
-    )->middleware('throttle:5,1');
-
-    // Consultar una publicación específica
-    Route::get(
-        '/publicaciones/{id_publicacion}',
-        [PublicacionController::class, 'show']
-    );
-
-    // Consultar publicaciones visibles de un trabajador
-    Route::get(
-        '/publicaciones/trabajador/{id_trabajador}',
-        [PublicacionController::class, 'publicacionesPorTrabajador']
-    );
-
-
-    // Rutas que requieren autenticación
+    // Rutas protegidas.
     Route::middleware('auth:sanctum')->group(function () {
-
         Route::get('/me', [AuthController::class, 'me']);
+        Route::patch('/me', [AccountController::class, 'update']);
+        Route::patch('/me/password', [AccountController::class, 'changePassword']);
+        Route::post('/auth/logout', [AuthController::class, 'logout']);
+        Route::get('/tipos-publicacion', [CatalogoController::class, 'tiposPublicacion']);
 
-        //Actualizar cuenta
-        Route::patch(
-            '/me',
-            [AccountController::class, 'update']
-        );
+        // Perfil profesional.
+        Route::post('/perfiles', [PerfilProfesionalController::class, 'store']);
+        Route::get('/me/perfil', [PerfilProfesionalController::class, 'show']);
+        Route::patch('/me/perfil', [PerfilProfesionalController::class, 'update']);
+        Route::put('/me/perfil/oficios', [PerfilProfesionalController::class, 'updateOficios']);
 
-        //Cambiar contraseña
-        Route::patch(
-            '/me/password',
-            [AccountController::class, 'changePassword']
-        );
+        // Disponibilidades.
+        Route::get('/me/perfil/disponibilidades', [DisponibilidadController::class, 'index']);
+        Route::post('/me/perfil/disponibilidades', [DisponibilidadController::class, 'store']);
+        Route::patch('/me/perfil/disponibilidades/{id_disponibilidad}', [DisponibilidadController::class, 'update']);
+        Route::delete('/me/perfil/disponibilidades/{id_disponibilidad}', [DisponibilidadController::class, 'destroy']);
 
-        Route::post(
-            '/auth/logout',
-            [AuthController::class, 'logout']
-        );
+        // Certificados.
+        Route::get('/me/perfil/certificados', [CertificadoController::class, 'index']);
+        Route::post('/me/perfil/certificados', [CertificadoController::class, 'store']);
+        Route::delete('/me/perfil/certificados/{id_certificado}', [CertificadoController::class, 'destroy']);
 
-        Route::get(
-            '/tipos-publicacion',
-            [CatalogoController::class, 'tiposPublicacion']
-        );
+        // API 18: solicitudes propias de habilitación.
+        Route::post('/me/perfil/solicitudes-habilitacion', [SolicitudHabilitacionController::class, 'store']);
+        Route::get('/me/perfil/solicitudes-habilitacion', [SolicitudHabilitacionController::class, 'index']);
 
-        // Perfil profesional
-        Route::post(
-            '/perfiles',
-            [PerfilProfesionalController::class, 'store']
-        );
+        // API 20: contrataciones.
+        Route::post('/contrataciones', [ContratacionController::class, 'store']);
+        Route::get('/contrataciones', [ContratacionController::class, 'index']);
+        Route::get('/contrataciones/{id_contratacion}', [ContratacionController::class, 'show']);
+        Route::patch('/contrataciones/{contratacion:id_contratacion}/aceptar', [ContratacionTransicionController::class, 'aceptar']);
+        Route::patch('/contrataciones/{contratacion:id_contratacion}/rechazar', [ContratacionTransicionController::class, 'rechazar']);
+        Route::patch('/contrataciones/{contratacion:id_contratacion}/iniciar', [ContratacionTransicionController::class, 'iniciar']);
+        Route::patch('/contrataciones/{contratacion:id_contratacion}/finalizar', [ContratacionTransicionController::class, 'finalizar']);
+        Route::patch('/contrataciones/{contratacion:id_contratacion}/cancelar', [ContratacionTransicionController::class, 'cancelar']);
 
-        Route::get(
-            '/me/perfil',
-            [PerfilProfesionalController::class, 'show']
-        );
+        // Publicaciones y evidencias.
+        Route::post('/contrataciones/{id_contratacion}/publicacion', [PublicacionController::class, 'store']);
+        Route::patch('/publicaciones/{id_publicacion}', [PublicacionController::class, 'update']);
+        Route::get('/me/perfil/publicaciones', [PublicacionController::class, 'misPublicaciones']);
+        Route::patch('/admin/publicaciones/{id_publicacion}/ocultar', [PublicacionController::class, 'ocultar']);
+        Route::post('/publicaciones/{id_publicacion}/evidencias', [EvidenciaController::class, 'store']);
+        Route::delete('/evidencias/{id_evidencia}', [EvidenciaController::class, 'destroy']);
 
-        // Actualizar perfil profesional propio
-        Route::patch(
-            '/me/perfil',
-            [PerfilProfesionalController::class, 'update']
-        );
+        // API 24: valoraciones.
+        Route::post('/publicaciones/{id_publicacion}/valoracion', [ValoracionController::class, 'store']);
+        Route::patch('/valoraciones/{id_valoracion}', [ValoracionController::class, 'update']);
 
-        // Actualizar oficios del perfil profesional
-        Route::put(
-            '/me/perfil/oficios',
-            [PerfilProfesionalController::class, 'updateOficios']
-        );
+        // API 25: reportes.
+        Route::post('/reportes', [ReporteController::class, 'store']);
 
-        // Disponibilidad del trabajador
-        // Consultar disponibilidades propias
-        Route::get(
-            '/me/perfil/disponibilidades',
-            [DisponibilidadController::class, 'index']
-        );
+        // API 26: notificaciones propias.
+        Route::get('/notificaciones/no-leidas/count', [NotificacionController::class, 'countNoLeidas']);
+        Route::get('/notificaciones', [NotificacionController::class, 'index']);
+        Route::patch('/notificaciones/leer-todas', [NotificacionController::class, 'marcarTodasComoLeidas']);
+        Route::patch('/notificaciones/{id_notificacion}/leer', [NotificacionController::class, 'marcarComoLeida']);
 
-        // Registrar disponibilidad
-        Route::post(
-            '/me/perfil/disponibilidades',
-            [DisponibilidadController::class, 'store']
-        );
-
-        // Actualizar disponibilidad
-        Route::patch(
-            '/me/perfil/disponibilidades/{id_disponibilidad}',
-            [DisponibilidadController::class, 'update']
-        );
-
-        // Eliminar disponibilidad
-        Route::delete(
-            '/me/perfil/disponibilidades/{id_disponibilidad}',
-            [DisponibilidadController::class, 'destroy']
-        );
-
-        // Certificados del trabajador
-        // Consultar certificados propios
-        Route::get(
-            '/me/perfil/certificados',
-            [CertificadoController::class, 'index']
-        );
-
-        // Registrar certificado
-        Route::post(
-            '/me/perfil/certificados',
-            [CertificadoController::class, 'store']
-        );
-
-
-        // Eliminar certificado
-        Route::delete(
-            '/me/perfil/certificados/{id_certificado}',
-            [CertificadoController::class, 'destroy']
-        );
-
-        // API 18 - Solicitudes de habilitación
-
-        // Enviar solicitud de habilitación
-        Route::post(
-            '/me/perfil/solicitudes-habilitacion',
-            [SolicitudHabilitacionController::class, 'store']
-        );
-
-        // Consultar historial de solicitudes propias
-        Route::get(
-            '/me/perfil/solicitudes-habilitacion',
-            [SolicitudHabilitacionController::class, 'index']
-        );
-
-        // API 20 - Contrataciones
-
-        // Crear solicitud de contratación
-        Route::post(
-            '/contrataciones',
-            [ContratacionController::class, 'store']
-        );
-
-        // Listar contrataciones propias
-        Route::get(
-            '/contrataciones',
-            [ContratacionController::class, 'index']
-        );
-
-        // Consultar una contratación específica
-        Route::get(
-            '/contrataciones/{id_contratacion}',
-            [ContratacionController::class, 'show']
-        );
-
-        /**
-         * Transiciones de contratacion
-         */
-        Route::patch(
-            '/contrataciones/{contratacion:id_contratacion}/aceptar',
-            [ContratacionTransicionController::class, 'aceptar']
-        );
-
-        Route::patch(
-            '/contrataciones/{contratacion:id_contratacion}/rechazar',
-            [ContratacionTransicionController::class, 'rechazar']
-        );
-
-        Route::patch(
-            '/contrataciones/{contratacion:id_contratacion}/iniciar',
-            [ContratacionTransicionController::class, 'iniciar']
-        );
-
-        Route::patch(
-            '/contrataciones/{contratacion:id_contratacion}/finalizar',
-            [ContratacionTransicionController::class, 'finalizar']
-        );
-
-        Route::patch(
-            '/contrataciones/{contratacion:id_contratacion}/cancelar',
-            [ContratacionTransicionController::class, 'cancelar']
-        );
-
-        /**
-         * Publicaciones
-         */
-        // Crear publicación asociada a una contratación finalizada
-        Route::post(
-            '/contrataciones/{id_contratacion}/publicacion',
-            [PublicacionController::class, 'store']
-        );
-
-        // Actualizar publicación propia
-        Route::patch(
-            '/publicaciones/{id_publicacion}',
-            [PublicacionController::class, 'update']
-        );
-
-        // Consultar publicaciones propias
-        Route::get(
-            '/me/perfil/publicaciones',
-            [PublicacionController::class, 'misPublicaciones']
-        );
-
-        // Ocultar publicación (administrador)
-        Route::patch(
-            '/admin/publicaciones/{id_publicacion}/ocultar',
-            [PublicacionController::class, 'ocultar']
-        );
-
-        /**
-         * EVIDENCIAS
-         */
-        // Cargar evidencias a una publicación
-
-        Route::post(
-            '/publicaciones/{id_publicacion}/evidencias',
-            [EvidenciaController::class, 'store']
-        );
-
-        // Eliminar evidencia
-        Route::delete(
-            '/evidencias/{id_evidencia}',
-            [EvidenciaController::class, 'destroy']
-        );
-
-
-        /**
-         * API 24 - VALORACIONES
-         */
-
-        // Crear valoración de una publicación.
-        Route::post(
-            '/publicaciones/{id_publicacion}/valoracion',
-            [ValoracionController::class, 'store']
-        );
-
-        // Actualizar una valoración propia.
-        Route::patch(
-            '/valoraciones/{id_valoracion}',
-            [ValoracionController::class, 'update']
-        );
-
-
-/**
- * API 25 - REPORTES
- */
-
-// Crear un reporte de publicación o perfil profesional.
-Route::post(
-    '/reportes',
-    [ReporteController::class, 'store']
-);
-
-
+        // API 27: endpoints administrativos de usuarios.
+        Route::prefix('admin')
+            ->middleware('administrador')
+            ->group(function () {
+                Route::get('/usuarios', [AdminUsuarioController::class, 'index']);
+                Route::get('/usuarios/{id_usuario}', [AdminUsuarioController::class, 'show']);
+                Route::patch('/usuarios/{id_usuario}/suspender', [AdminUsuarioController::class, 'suspender']);
+                Route::patch('/usuarios/{id_usuario}/reactivar', [AdminUsuarioController::class, 'reactivar']);
+            });
     });
 });

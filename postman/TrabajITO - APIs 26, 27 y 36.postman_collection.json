@@ -1,0 +1,2432 @@
+{
+  "info": {
+    "_postman_id": "2b0f77cf-fb38-436d-8619-c901b5e3c015",
+    "name": "TrabajITO - APIs 26, 27 y 36",
+    "description": "Colección única Postman 40 solicitudes.Ejecutar de arriba hacia abajo con Laravel iniciado en [http://127.0.0.1:8000](http://127.0.0.1:8000) y la base de datos sembrada mediante php artisan migrate:fresh --seed. Los tokens e IDs que aparecen vacíos al principio se generan automáticamente por los scripts de las solicitudes de login, creación de contrataciones y consulta de notificaciones; no deben rellenarse manualmente. API 36 valida eventos automáticos disparados por solicitudes y transiciones. La aprobación/rechazo de solicitudes de habilitación se cubre con NotificacionAutomaticaTest, ya que la versión actual no expone endpoints administrativos HTTP para esas transiciones.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56286288",
+    "_collection_link": "https://go.postman.co/collection/56286288-2b0f77cf-fb38-436d-8619-c901b5e3c015?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "01 - Iniciar sesión como administrador",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"Token de administrador generado\", () => pm.expect(json.data.token).to.be.a(\"string\").and.not.empty);",
+              "pm.collectionVariables.set(\"adminToken\", json.data.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"device_name\": \"Postman API 26 y 27\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/auth/login",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Endpoint: POST http://127.0.0.1:8000/api/v1/auth/login"
+      },
+      "response": []
+    },
+    {
+      "name": "02 - Iniciar sesión como cliente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"Token de cliente generado\", () => pm.expect(json.data.token).to.be.a(\"string\").and.not.empty);",
+              "pm.collectionVariables.set(\"clientToken\", json.data.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"correo\": \"{{clientEmail}}\",\n  \"password\": \"{{clientPassword}}\",\n  \"device_name\": \"Postman API 26 y 27\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/auth/login",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Endpoint: POST http://127.0.0.1:8000/api/v1/auth/login"
+      },
+      "response": []
+    },
+    {
+      "name": "03 - Iniciar sesión como trabajador 1",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"Token de trabajador 1 generado\", () => pm.expect(json.data.token).to.be.a(\"string\").and.not.empty);",
+              "pm.collectionVariables.set(\"worker1Token\", json.data.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"correo\": \"{{worker1Email}}\",\n  \"password\": \"{{workerPassword}}\",\n  \"device_name\": \"Postman API 26 y 27\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/auth/login",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Endpoint: POST http://127.0.0.1:8000/api/v1/auth/login"
+      },
+      "response": []
+    },
+    {
+      "name": "04 - Iniciar sesión como trabajador 2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"Token de trabajador 2 generado\", () => pm.expect(json.data.token).to.be.a(\"string\").and.not.empty);",
+              "pm.collectionVariables.set(\"worker2Token\", json.data.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"correo\": \"{{worker2Email}}\",\n  \"password\": \"{{workerPassword}}\",\n  \"device_name\": \"Postman API 26 y 27\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/auth/login",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Endpoint: POST http://127.0.0.1:8000/api/v1/auth/login"
+      },
+      "response": []
+    },
+    {
+      "name": "05 - API 27 - Listar usuarios",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"Respuesta paginada\", () => { pm.expect(json.data).to.be.an(\"array\"); pm.expect(json.meta).to.have.property(\"current_page\"); pm.expect(json.links).to.have.property(\"next\"); });",
+              "pm.test(\"Estructura de usuario administrativo\", () => { if (json.data.length) { pm.expect(json.data[0]).to.have.property(\"nombre_completo\"); pm.expect(json.data[0]).to.have.property(\"tiene_perfil_profesional\"); pm.expect(json.data[0]).to.have.property(\"es_trabajador_habilitado\"); } });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/admin/usuarios",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "usuarios"
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/admin/usuarios"
+      },
+      "response": []
+    },
+    {
+      "name": "06 - API 27 - Buscar y filtrar usuarios",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"Los resultados cumplen los filtros\", () => { json.data.forEach(u => { pm.expect(u.activo).to.eql(true); pm.expect(u.es_administrador).to.eql(false); }); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/admin/usuarios?buscar=Carlos&activo=true&es_administrador=false&page=1",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "usuarios"
+          ],
+          "query": [
+            {
+              "key": "buscar",
+              "value": "Carlos"
+            },
+            {
+              "key": "activo",
+              "value": "true"
+            },
+            {
+              "key": "es_administrador",
+              "value": "false"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/admin/usuarios?buscar=Carlos&activo=true&es_administrador=false&page=1"
+      },
+      "response": []
+    },
+    {
+      "name": "07 - API 27 - Consultar usuario con perfil profesional",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"Incluye perfil profesional resumido\", () => { pm.expect(json.data).to.have.property(\"perfil_profesional\"); pm.expect(json.data.perfil_profesional).to.have.property(\"id_trabajador\"); pm.expect(json.data.perfil_profesional).to.have.property(\"activo\"); });",
+              "pm.test(\"No expone información sensible\", () => { pm.expect(json.data).not.to.have.property(\"contrasena_hash\"); pm.expect(json.data).not.to.have.property(\"remember_token\"); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/admin/usuarios/{{idUsuarioObjetivo}}",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "usuarios",
+            "{{idUsuarioObjetivo}}"
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/admin/usuarios/{{idUsuarioObjetivo}}"
+      },
+      "response": []
+    },
+    {
+      "name": "08 - API 27 - Suspender usuario",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"La cuenta quedó suspendida\", () => pm.expect(json.data.activo).to.eql(false));",
+              "pm.test(\"La respuesta contiene únicamente el estado administrativo\", () => pm.expect(json.data).to.have.all.keys(\"id_usuario\", \"activo\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/admin/usuarios/{{idUsuarioObjetivo}}/suspender",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "usuarios",
+            "{{idUsuarioObjetivo}}",
+            "suspender"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/admin/usuarios/{{idUsuarioObjetivo}}/suspender"
+      },
+      "response": []
+    },
+    {
+      "name": "09 - API 27 - Verificar suspensión del perfil",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"La cuenta y el perfil están suspendidos\", () => { pm.expect(json.data.activo).to.eql(false); pm.expect(json.data.perfil_profesional.activo).to.eql(false); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/admin/usuarios/{{idUsuarioObjetivo}}",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "usuarios",
+            "{{idUsuarioObjetivo}}"
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/admin/usuarios/{{idUsuarioObjetivo}}"
+      },
+      "response": []
+    },
+    {
+      "name": "10 - API 27 - Reactivar usuario",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"La cuenta quedó activa\", () => pm.expect(json.data.activo).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/admin/usuarios/{{idUsuarioObjetivo}}/reactivar",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "usuarios",
+            "{{idUsuarioObjetivo}}",
+            "reactivar"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/admin/usuarios/{{idUsuarioObjetivo}}/reactivar"
+      },
+      "response": []
+    },
+    {
+      "name": "11 - API 27 - Verificar que reactivar no habilita el perfil",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"El usuario está activo pero el perfil continúa suspendido\", () => { pm.expect(json.data.activo).to.eql(true); pm.expect(json.data.perfil_profesional.activo).to.eql(false); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/admin/usuarios/{{idUsuarioObjetivo}}",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "usuarios",
+            "{{idUsuarioObjetivo}}"
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/admin/usuarios/{{idUsuarioObjetivo}}"
+      },
+      "response": []
+    },
+    {
+      "name": "12 - API 18 / API 36 - Enviar solicitud de habilitación como trabajador 2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "const json = pm.response.json();",
+              "pm.test(\"Solicitud de habilitación creada\", () => pm.expect(json.data.estado.estado_solicitud).to.eql(\"Pendiente\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{worker2Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/me/perfil/solicitudes-habilitacion",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "me",
+            "perfil",
+            "solicitudes-habilitacion"
+          ]
+        },
+        "description": "Endpoint: POST http://127.0.0.1:8000/api/v1/me/perfil/solicitudes-habilitacion"
+      },
+      "response": []
+    },
+    {
+      "name": "13 - API 20 / API 36 - Crear contratación para flujo de aceptación",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "const json = pm.response.json();",
+              "pm.test(\"Contratación creada\", () => pm.expect(json.data.id_contratacion).to.be.a(\"number\"));",
+              "pm.collectionVariables.set(\"contratacionAceptadaId\", json.data.id_contratacion);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{clientToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id_trabajador\": \"{{idTrabajador}}\",\n  \"descripcion_servicio\": \"Prueba API 36: instalación y mantenimiento eléctrico para comprobar notificaciones.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/contrataciones",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "contrataciones"
+          ]
+        },
+        "description": "Endpoint: POST http://127.0.0.1:8000/api/v1/contrataciones"
+      },
+      "response": []
+    },
+    {
+      "name": "14 - API 20 / API 36 - Aceptar contratación",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Estado aceptado\", () => pm.expect(pm.response.json().data.estado.id_estado_contratacion).to.eql(2));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{worker1Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/contrataciones/{{contratacionAceptadaId}}/aceptar",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "contrataciones",
+            "{{contratacionAceptadaId}}",
+            "aceptar"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/contrataciones/{{contratacionAceptadaId}}/aceptar"
+      },
+      "response": []
+    },
+    {
+      "name": "15 - API 20 / API 36 - Iniciar contratación",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Estado en proceso\", () => pm.expect(pm.response.json().data.estado.id_estado_contratacion).to.eql(4));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{worker1Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/contrataciones/{{contratacionAceptadaId}}/iniciar",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "contrataciones",
+            "{{contratacionAceptadaId}}",
+            "iniciar"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/contrataciones/{{contratacionAceptadaId}}/iniciar"
+      },
+      "response": []
+    },
+    {
+      "name": "16 - API 20 / API 36 - Finalizar contratación",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Estado finalizado\", () => pm.expect(pm.response.json().data.estado.id_estado_contratacion).to.eql(5));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{worker1Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/contrataciones/{{contratacionAceptadaId}}/finalizar",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "contrataciones",
+            "{{contratacionAceptadaId}}",
+            "finalizar"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/contrataciones/{{contratacionAceptadaId}}/finalizar"
+      },
+      "response": []
+    },
+    {
+      "name": "17 - API 20 / API 36 - Crear contratación para flujo de rechazo",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set(\"contratacionRechazadaId\", json.data.id_contratacion);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{clientToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id_trabajador\": \"{{idTrabajador}}\",\n  \"descripcion_servicio\": \"Prueba API 36: servicio de mantenimiento para comprobar rechazo.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/contrataciones",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "contrataciones"
+          ]
+        },
+        "description": "Endpoint: POST http://127.0.0.1:8000/api/v1/contrataciones"
+      },
+      "response": []
+    },
+    {
+      "name": "18 - API 20 / API 36 - Rechazar contratación",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Estado rechazado\", () => pm.expect(pm.response.json().data.estado.id_estado_contratacion).to.eql(3));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{worker1Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/contrataciones/{{contratacionRechazadaId}}/rechazar",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "contrataciones",
+            "{{contratacionRechazadaId}}",
+            "rechazar"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/contrataciones/{{contratacionRechazadaId}}/rechazar"
+      },
+      "response": []
+    },
+    {
+      "name": "19 - API 20 / API 36 - Crear contratación para flujo de cancelación",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "const json = pm.response.json();",
+              "pm.collectionVariables.set(\"contratacionCanceladaId\", json.data.id_contratacion);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{clientToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id_trabajador\": \"{{idTrabajador}}\",\n  \"descripcion_servicio\": \"Prueba API 36: servicio de mantenimiento para comprobar cancelación.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/contrataciones",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "contrataciones"
+          ]
+        },
+        "description": "Endpoint: POST http://127.0.0.1:8000/api/v1/contrataciones"
+      },
+      "response": []
+    },
+    {
+      "name": "20 - API 20 / API 36 - Cancelar contratación como cliente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Estado cancelado\", () => pm.expect(pm.response.json().data.estado.id_estado_contratacion).to.eql(6));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{clientToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/contrataciones/{{contratacionCanceladaId}}/cancelar",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "contrataciones",
+            "{{contratacionCanceladaId}}",
+            "cancelar"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/contrataciones/{{contratacionCanceladaId}}/cancelar"
+      },
+      "response": []
+    },
+    {
+      "name": "21 - API 25 / API 36 - Crear reporte de perfil para notificar administradores",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"Reporte de perfil creado\", () => pm.expect(pm.response.json().data.tipo_objetivo).to.eql(\"PERFIL\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{clientToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipo_objetivo\": \"PERFIL\",\n  \"id_objetivo\": \"{{idTrabajador}}\",\n  \"motivo\": \"Verificación de perfil\",\n  \"descripcion\": \"Reporte de prueba para comprobar que los administradores reciben una notificación automática.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/reportes",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "reportes"
+          ]
+        },
+        "description": "Endpoint: POST http://127.0.0.1:8000/api/v1/reportes"
+      },
+      "response": []
+    },
+    {
+      "name": "22 - API 25 / API 36 - Crear reporte de publicación para notificar administradores",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "const json = pm.response.json();",
+              "pm.test(\"El reporte de publicación fue creado\", () => pm.expect(json.data.tipo_objetivo).to.eql(\"PUBLICACION\"));",
+              "pm.test(\"Se devuelve el identificador de la publicación reportada\", () => pm.expect(json.data.id_objetivo).to.eql(Number(pm.collectionVariables.get(\"idPublicacion\"))));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{clientToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipo_objetivo\": \"PUBLICACION\",\n  \"id_objetivo\": \"{{idPublicacion}}\",\n  \"motivo\": \"Revisión de publicación\",\n  \"descripcion\": \"Reporte de prueba para comprobar que los administradores reciben una notificación automática por una publicación reportada.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/reportes",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "reportes"
+          ]
+        },
+        "description": "Endpoint: POST http://127.0.0.1:8000/api/v1/reportes"
+      },
+      "response": []
+    },
+    {
+      "name": "23 - API 26 - Listar notificaciones no leídas del trabajador 1",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "const titulos = json.data.map(n => n.titulo);",
+              "pm.test(\"Se generó notificación por contratación creada\", () => pm.expect(titulos).to.include(\"Nueva solicitud de contratación\"));",
+              "pm.test(\"Se generó notificación por contratación finalizada\", () => pm.expect(titulos).to.include(\"Contratación finalizada\"));",
+              "pm.test(\"Se generó notificación por contratación cancelada\", () => pm.expect(titulos).to.include(\"Contratación cancelada\"));",
+              "const target = json.data.find(n => !n.leida && n.titulo === \"Nueva solicitud de contratación\");",
+              "pm.test(\"Se localizó la notificación nueva para marcarla\", () => pm.expect(target).to.exist);",
+              "if (target) pm.collectionVariables.set(\"idNotificacionWorker1\", target.id_notificacion);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{worker1Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones?leida=false&page=1",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones"
+          ],
+          "query": [
+            {
+              "key": "leida",
+              "value": "false"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/notificaciones?leida=false&page=1"
+      },
+      "response": []
+    },
+    {
+      "name": "24 - API 26 - Listar notificaciones no leídas del trabajador 2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test(\"Se generó la notificación automática de solicitud enviada\", () => pm.expect(json.data.some(n => n.titulo === \"Solicitud de habilitación enviada\")).to.eql(true));",
+              "const target = json.data.find(n => !n.leida && n.titulo === \"Solicitud de habilitación enviada\");",
+              "pm.test(\"Se localizó una notificación no leída para marcarla\", () => pm.expect(target).to.exist);",
+              "if (target) pm.collectionVariables.set(\"idNotificacionWorker2\", target.id_notificacion);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{worker2Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones?leida=false&page=1",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones"
+          ],
+          "query": [
+            {
+              "key": "leida",
+              "value": "false"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/notificaciones?leida=false&page=1"
+      },
+      "response": []
+    },
+    {
+      "name": "25 - API 26 - Listar notificaciones no leídas del cliente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "const titulos = json.data.map(n => n.titulo);",
+              "pm.test(\"El cliente recibió notificación de contratación aceptada\", () => pm.expect(titulos).to.include(\"Contratación aceptada\"));",
+              "pm.test(\"El cliente recibió notificación de contratación finalizada\", () => pm.expect(titulos).to.include(\"Contratación finalizada\"));",
+              "pm.test(\"El cliente recibió notificación de contratación rechazada\", () => pm.expect(titulos).to.include(\"Contratación rechazada\"));",
+              "pm.test(\"El cliente recibió notificación de contratación cancelada\", () => pm.expect(titulos).to.include(\"Contratación cancelada\"));",
+              "const target = json.data.find(n => !n.leida && n.titulo === \"Contratación aceptada\");",
+              "pm.test(\"Se localizó la notificación aceptada para marcarla\", () => pm.expect(target).to.exist);",
+              "if (target) pm.collectionVariables.set(\"idNotificacionCliente\", target.id_notificacion);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{clientToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones?leida=false&page=1",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones"
+          ],
+          "query": [
+            {
+              "key": "leida",
+              "value": "false"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/notificaciones?leida=false&page=1"
+      },
+      "response": []
+    },
+    {
+      "name": "26 - API 26 - Listar notificaciones no leídas del administrador",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "const titulos = json.data.map(n => n.titulo);",
+              "pm.test(\"El administrador recibió notificación por perfil reportado\", () => pm.expect(titulos).to.include(\"Nuevo perfil reportado\"));",
+              "pm.test(\"El administrador recibió notificación por publicación reportada\", () => pm.expect(titulos).to.include(\"Nueva publicación reportada\"));",
+              "const target = json.data.find(n => !n.leida && n.titulo === \"Nuevo perfil reportado\");",
+              "pm.test(\"Se localizó una notificación administrativa no leída\", () => pm.expect(target).to.exist);",
+              "if (target) pm.collectionVariables.set(\"idNotificacionAdmin\", target.id_notificacion);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones?leida=false&page=1",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones"
+          ],
+          "query": [
+            {
+              "key": "leida",
+              "value": "false"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/notificaciones?leida=false&page=1"
+      },
+      "response": []
+    },
+    {
+      "name": "27 - API 26 - Consultar conteo de no leídas del trabajador",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Conteo entero no negativo\", () => pm.expect(pm.response.json().data.total).to.be.a(\"number\").and.at.least(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{worker1Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones/no-leidas/count",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones",
+            "no-leidas",
+            "count"
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/notificaciones/no-leidas/count"
+      },
+      "response": []
+    },
+    {
+      "name": "28 - API 26 - Marcar una notificación del trabajador 1 como leída",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"La notificación quedó leída\", () => pm.expect(pm.response.json().data.leida).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{worker1Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones/{{idNotificacionWorker1}}/leer",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones",
+            "{{idNotificacionWorker1}}",
+            "leer"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/notificaciones/{{idNotificacionWorker1}}/leer"
+      },
+      "response": []
+    },
+    {
+      "name": "29 - API 26 - Marcar una notificación del trabajador 2 como leída",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"La notificación quedó leída\", () => pm.expect(pm.response.json().data.leida).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{worker2Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones/{{idNotificacionWorker2}}/leer",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones",
+            "{{idNotificacionWorker2}}",
+            "leer"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/notificaciones/{{idNotificacionWorker2}}/leer"
+      },
+      "response": []
+    },
+    {
+      "name": "30 - API 26 - Marcar una notificación del cliente como leída",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"La notificación quedó leída\", () => pm.expect(pm.response.json().data.leida).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{clientToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones/{{idNotificacionCliente}}/leer",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones",
+            "{{idNotificacionCliente}}",
+            "leer"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/notificaciones/{{idNotificacionCliente}}/leer"
+      },
+      "response": []
+    },
+    {
+      "name": "31 - API 26 - Marcar una notificación del administrador como leída",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"La notificación quedó leída\", () => pm.expect(pm.response.json().data.leida).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones/{{idNotificacionAdmin}}/leer",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones",
+            "{{idNotificacionAdmin}}",
+            "leer"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/notificaciones/{{idNotificacionAdmin}}/leer"
+      },
+      "response": []
+    },
+    {
+      "name": "32 - API 26 - Marcar todas las notificaciones del trabajador 1 como leídas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Devuelve la cantidad actualizada\", () => pm.expect(pm.response.json().data.actualizadas).to.be.a(\"number\").and.at.least(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{worker1Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones/leer-todas",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones",
+            "leer-todas"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/notificaciones/leer-todas"
+      },
+      "response": []
+    },
+    {
+      "name": "33 - API 26 - Marcar todas las notificaciones del trabajador 2 como leídas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Devuelve la cantidad actualizada\", () => pm.expect(pm.response.json().data.actualizadas).to.be.a(\"number\").and.at.least(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{worker2Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones/leer-todas",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones",
+            "leer-todas"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/notificaciones/leer-todas"
+      },
+      "response": []
+    },
+    {
+      "name": "34 - API 26 - Marcar todas las notificaciones del cliente como leídas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Devuelve la cantidad actualizada\", () => pm.expect(pm.response.json().data.actualizadas).to.be.a(\"number\").and.at.least(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{clientToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones/leer-todas",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones",
+            "leer-todas"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/notificaciones/leer-todas"
+      },
+      "response": []
+    },
+    {
+      "name": "35 - API 26 - Marcar todas las notificaciones del administrador como leídas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Devuelve la cantidad actualizada\", () => pm.expect(pm.response.json().data.actualizadas).to.be.a(\"number\").and.at.least(0));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones/leer-todas",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones",
+            "leer-todas"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/notificaciones/leer-todas"
+      },
+      "response": []
+    },
+    {
+      "name": "36 - API 26 - Impedir consultar una notificación ajena",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"No revela recursos de otro usuario\", () => pm.expect(pm.response.json().error_code).to.eql(\"RESOURCE_NOT_FOUND\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{clientToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones/{{idNotificacionWorker1}}/leer",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones",
+            "{{idNotificacionWorker1}}",
+            "leer"
+          ]
+        },
+        "description": "Endpoint: PATCH http://127.0.0.1:8000/api/v1/notificaciones/{{idNotificacionWorker1}}/leer"
+      },
+      "response": []
+    },
+    {
+      "name": "37 - API 26 - Requiere autenticación",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+              "pm.test(\"Código de autenticación del contrato\", () => pm.expect(pm.response.json().error_code).to.eql(\"UNAUTHENTICATED\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones"
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/notificaciones"
+      },
+      "response": []
+    },
+    {
+      "name": "38 - API 27 - Usuario no administrador recibe FORBIDDEN",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+              "pm.test(\"Código FORBIDDEN\", () => pm.expect(pm.response.json().error_code).to.eql(\"FORBIDDEN\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{clientToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/admin/usuarios",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "usuarios"
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/admin/usuarios"
+      },
+      "response": []
+    },
+    {
+      "name": "39 - API 27 - Usuario inexistente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"Código RESOURCE_NOT_FOUND\", () => pm.expect(pm.response.json().error_code).to.eql(\"RESOURCE_NOT_FOUND\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{adminToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/admin/usuarios/999999",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "usuarios",
+            "999999"
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/admin/usuarios/999999"
+      },
+      "response": []
+    },
+    {
+      "name": "40 - API 26 - Filtro inválido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+              "pm.test(\"Código VALIDATION_ERROR\", () => pm.expect(pm.response.json().error_code).to.eql(\"VALIDATION_ERROR\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{worker1Token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://127.0.0.1:8000/api/v1/notificaciones?leida=no-es-valido",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "8000",
+          "path": [
+            "api",
+            "v1",
+            "notificaciones"
+          ],
+          "query": [
+            {
+              "key": "leida",
+              "value": "no-es-valido"
+            }
+          ]
+        },
+        "description": "Endpoint: GET http://127.0.0.1:8000/api/v1/notificaciones?leida=no-es-valido"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "adminToken",
+      "value": "",
+      "description": "Se genera automáticamente al ejecutar la solicitud 01 (login administrador)."
+    },
+    {
+      "key": "clientToken",
+      "value": "",
+      "description": "Se genera automáticamente al ejecutar la solicitud 02 (login cliente)."
+    },
+    {
+      "key": "worker1Token",
+      "value": "",
+      "description": "Se genera automáticamente al ejecutar la solicitud 03 (login trabajador 1)."
+    },
+    {
+      "key": "worker2Token",
+      "value": "",
+      "description": "Se genera automáticamente al ejecutar la solicitud 04 (login trabajador 2)."
+    },
+    {
+      "key": "contratacionAceptadaId",
+      "value": "",
+      "description": "Se captura automáticamente en la solicitud 13."
+    },
+    {
+      "key": "contratacionRechazadaId",
+      "value": "",
+      "description": "Se captura automáticamente en la solicitud 17."
+    },
+    {
+      "key": "contratacionCanceladaId",
+      "value": "",
+      "description": "Se captura automáticamente en la solicitud 19."
+    },
+    {
+      "key": "idNotificacionWorker1",
+      "value": "",
+      "description": "Se captura automáticamente al listar notificaciones en la solicitud 23."
+    },
+    {
+      "key": "idNotificacionWorker2",
+      "value": "",
+      "description": "Se captura automáticamente al listar notificaciones en la solicitud 24."
+    },
+    {
+      "key": "idNotificacionCliente",
+      "value": "",
+      "description": "Se captura automáticamente al listar notificaciones en la solicitud 25."
+    },
+    {
+      "key": "idNotificacionAdmin",
+      "value": "",
+      "description": "Se captura automáticamente al listar notificaciones en la solicitud 26."
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@trabajito.test",
+      "description": "Cuenta de prueba del seeder: admin@trabajito.test."
+    },
+    {
+      "key": "adminPassword",
+      "value": "Admin12345!",
+      "description": "Contraseña de prueba del administrador definida en UsuarioSeeder."
+    },
+    {
+      "key": "clientEmail",
+      "value": "cliente@trabajito.test",
+      "description": "Cuenta de prueba del seeder: cliente@trabajito.test."
+    },
+    {
+      "key": "clientPassword",
+      "value": "Cliente12345!",
+      "description": "Contraseña de prueba del cliente definida en UsuarioSeeder."
+    },
+    {
+      "key": "worker1Email",
+      "value": "trabajador1@trabajito.test",
+      "description": "Cuenta de prueba del seeder: trabajador1@trabajito.test."
+    },
+    {
+      "key": "worker2Email",
+      "value": "trabajador2@trabajito.test",
+      "description": "Cuenta de prueba del seeder: trabajador2@trabajito.test."
+    },
+    {
+      "key": "workerPassword",
+      "value": "Trabajador12345!",
+      "description": "Contraseña de prueba compartida por los trabajadores definida en UsuarioSeeder."
+    },
+    {
+      "key": "idTrabajador",
+      "value": "1",
+      "description": "Identificador del perfil profesional del trabajador 1 usado en contrataciones y reportes."
+    },
+    {
+      "key": "idUsuarioObjetivo",
+      "value": "4",
+      "description": "Identificador de la cuenta del trabajador 2 usada en las pruebas administrativas."
+    },
+    {
+      "key": "idPublicacion",
+      "value": "1",
+      "description": "Identificador de la publicación sembrada para la prueba de reporte."
+    }
+  ]
+}
