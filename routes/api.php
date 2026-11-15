@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\SolicitudHabilitacionController;
 use App\Http\Controllers\Api\V1\TrabajadorController;
 use App\Http\Controllers\Api\V1\ValoracionController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\AdminSolicitudHabilitacionController;
 
 Route::prefix('v1')->group(function () {
     // Registro e inicio de sesión.
@@ -104,14 +105,27 @@ Route::prefix('v1')->group(function () {
         Route::patch('/notificaciones/leer-todas', [NotificacionController::class, 'marcarTodasComoLeidas']);
         Route::patch('/notificaciones/{id_notificacion}/leer', [NotificacionController::class, 'marcarComoLeida']);
 
-        // API 27: endpoints administrativos de usuarios.
+        // APIs 27 y 28: rutas administrativas.
         Route::prefix('admin')
             ->middleware('administrador')
             ->group(function () {
+
+                // API 27: administración de usuarios.
                 Route::get('/usuarios', [AdminUsuarioController::class, 'index']);
                 Route::get('/usuarios/{id_usuario}', [AdminUsuarioController::class, 'show']);
                 Route::patch('/usuarios/{id_usuario}/suspender', [AdminUsuarioController::class, 'suspender']);
                 Route::patch('/usuarios/{id_usuario}/reactivar', [AdminUsuarioController::class, 'reactivar']);
+
+                // API 28: administración de solicitudes de habilitación.
+                Route::get('/solicitudes-habilitacion', [AdminSolicitudHabilitacionController::class, 'index']);
+                Route::get('/solicitudes-habilitacion/{id_solicitud}', [AdminSolicitudHabilitacionController::class, 'show'])
+                    ->whereNumber('id_solicitud');
+                Route::patch('/solicitudes-habilitacion/{id_solicitud}/revisar', [AdminSolicitudHabilitacionController::class, 'revisar'])
+                    ->whereNumber('id_solicitud');
+                Route::patch('/solicitudes-habilitacion/{id_solicitud}/aprobar', [AdminSolicitudHabilitacionController::class, 'aprobar'])
+                    ->whereNumber('id_solicitud');
+                Route::patch('/solicitudes-habilitacion/{id_solicitud}/rechazar', [AdminSolicitudHabilitacionController::class, 'rechazar'])
+                    ->whereNumber('id_solicitud');
             });
     });
 });

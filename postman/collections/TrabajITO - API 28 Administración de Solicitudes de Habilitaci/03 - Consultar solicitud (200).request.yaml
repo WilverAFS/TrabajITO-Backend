@@ -1,0 +1,13 @@
+$kind: http-request
+description: Define id_solicitud_consulta con un ID existente antes de enviarla.
+url: "{{base_url}}/api/v1/admin/solicitudes-habilitacion/{{id_solicitud_consulta}}"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      const body = pm.response.json();
+      pm.test("Respuesta exitosa del contrato", function () { pm.expect(body.success).to.eql(true); pm.expect(body).to.have.property("data"); });
+      pm.test("Detalle de solicitud", function () { pm.expect(body.data).to.include.keys("id_solicitud","perfil","estado","administrador_revisor","comentario_revision","fecha_solicitud","fecha_revision"); if (body.data.perfil) pm.expect(body.data.perfil).to.include.keys("id_trabajador","nombre_completo","municipio","oficios","certificados"); });
+    language: text/javascript
+order: 4000

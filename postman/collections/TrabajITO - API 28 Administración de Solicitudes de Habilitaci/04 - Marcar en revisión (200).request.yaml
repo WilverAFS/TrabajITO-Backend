@@ -1,0 +1,13 @@
+$kind: http-request
+description: Usa una solicitud PENDIENTE que no se reutilice para aprobar/rechazar.
+url: "{{base_url}}/api/v1/admin/solicitudes-habilitacion/{{id_solicitud_revisar}}/revisar"
+method: PATCH
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      const body = pm.response.json();
+      pm.test("Respuesta exitosa del contrato", function () { pm.expect(body.success).to.eql(true); pm.expect(body).to.have.property("data"); });
+      pm.test("Cambio a En revisión", function () { pm.expect(body.data.estado.id_estado_solicitud).to.eql(2); pm.expect(body.data.administrador_revisor).to.be.an("object"); });
+    language: text/javascript
+order: 5000

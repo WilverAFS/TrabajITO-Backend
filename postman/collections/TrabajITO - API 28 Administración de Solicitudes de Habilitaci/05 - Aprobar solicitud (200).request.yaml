@@ -1,0 +1,21 @@
+$kind: http-request
+description: Usa solicitud pendiente o en revisión con perfil inactivo. Esta operación activa el perfil y genera notificación por Observer.
+url: "{{base_url}}/api/v1/admin/solicitudes-habilitacion/{{id_solicitud_aprobar}}/aprobar"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "comentario_revision": "La información fue validada."
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      const body = pm.response.json();
+      pm.test("Respuesta exitosa del contrato", function () { pm.expect(body.success).to.eql(true); pm.expect(body).to.have.property("data"); });
+      pm.test("Aprobada y perfil activo", function () { pm.expect(body.data.estado.id_estado_solicitud).to.eql(3); pm.expect(body.data.perfil_activo).to.eql(true); });
+    language: text/javascript
+order: 6000

@@ -1,0 +1,740 @@
+{
+  "info": {
+    "_postman_id": "3c650d6b-752d-5348-b91d-6cef95ff00b7",
+    "name": "TrabajITO - API 28 Administración de Solicitudes de Habilitación",
+    "description": "Colección Postman v2.1 para revisar API 28 conforme al Contrato de API REST v1 de TrabajITO.\n\nCONFIGURACIÓN: 1) Iniciar sesión como administrador por el mecanismo del proyecto; 2) pegar el token SOLO en la variable local token_admin de Postman; 3) definir IDs existentes en las variables id_solicitud_* (usar registros distintos para las operaciones que cambian estado); 4) opcional: token_usuario para la prueba 403.\n\nIMPORTANTE: No se incluyen credenciales ni tokens reales. Las pruebas 04, 05, 06, 12 y 13 modifican el estado de solicitudes: probar únicamente con datos de prueba. No ejecutar toda la colección en bloque sin preparar los IDs. El usuario administrador debe tener es_administrador=true y activo=true.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token_admin}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "token_admin",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "token_usuario",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "id_solicitud_consulta",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "id_solicitud_revisar",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "id_solicitud_aprobar",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "id_solicitud_rechazar",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "id_solicitud_ya_revisada",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "id_solicitud_resuelta",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Sin autenticación (401)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion"
+          ]
+        },
+        "description": "Verifica que la ruta exige auth:sanctum.",
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Formato de error del contrato\", function () { pm.expect(body.success).to.eql(false); pm.expect(body).to.have.property(\"message\"); pm.expect(body).to.have.property(\"error_code\"); });",
+              "pm.test(\"Sin autenticar\", () => pm.expect(body.error_code).to.eql(\"UNAUTHENTICATED\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - Listar solicitudes (200)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion"
+          ]
+        },
+        "description": "Token de administrador requerido. Respuesta paginada de SolicitudHabilitacionResource."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Respuesta exitosa del contrato\", function () { pm.expect(body.success).to.eql(true); pm.expect(body).to.have.property(\"data\"); });",
+              "pm.test(\"Listado y metadatos\", function () { pm.expect(body.data).to.be.an(\"array\"); pm.expect(body.meta).to.have.all.keys(\"current_page\",\"per_page\",\"last_page\",\"total\"); pm.expect(body.links).to.have.all.keys(\"first\",\"last\",\"prev\",\"next\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Filtrar pendientes (200)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion?id_estado=1&page=1&per_page=15&sort=fecha_solicitud&direction=asc",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion"
+          ],
+          "query": [
+            {
+              "key": "id_estado",
+              "value": "1"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "per_page",
+              "value": "15"
+            },
+            {
+              "key": "sort",
+              "value": "fecha_solicitud"
+            },
+            {
+              "key": "direction",
+              "value": "asc"
+            }
+          ]
+        },
+        "description": "Filtra las solicitudes pendientes y ordena por fecha."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Respuesta exitosa del contrato\", function () { pm.expect(body.success).to.eql(true); pm.expect(body).to.have.property(\"data\"); });",
+              "pm.test(\"Solo solicitudes pendientes\", function () { pm.expect(body.data).to.be.an(\"array\"); body.data.forEach(s => pm.expect(s.estado.id_estado_solicitud).to.eql(1)); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Consultar solicitud (200)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion/{{id_solicitud_consulta}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion",
+            "{{id_solicitud_consulta}}"
+          ]
+        },
+        "description": "Define id_solicitud_consulta con un ID existente antes de enviarla."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Respuesta exitosa del contrato\", function () { pm.expect(body.success).to.eql(true); pm.expect(body).to.have.property(\"data\"); });",
+              "pm.test(\"Detalle de solicitud\", function () { pm.expect(body.data).to.include.keys(\"id_solicitud\",\"perfil\",\"estado\",\"administrador_revisor\",\"comentario_revision\",\"fecha_solicitud\",\"fecha_revision\"); if (body.data.perfil) pm.expect(body.data.perfil).to.include.keys(\"id_trabajador\",\"nombre_completo\",\"municipio\",\"oficios\",\"certificados\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Marcar en revisión (200)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion/{{id_solicitud_revisar}}/revisar",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion",
+            "{{id_solicitud_revisar}}",
+            "revisar"
+          ]
+        },
+        "description": "Usa una solicitud PENDIENTE que no se reutilice para aprobar/rechazar."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Respuesta exitosa del contrato\", function () { pm.expect(body.success).to.eql(true); pm.expect(body).to.have.property(\"data\"); });",
+              "pm.test(\"Cambio a En revisión\", function () { pm.expect(body.data.estado.id_estado_solicitud).to.eql(2); pm.expect(body.data.administrador_revisor).to.be.an(\"object\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Aprobar solicitud (200)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion/{{id_solicitud_aprobar}}/aprobar",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion",
+            "{{id_solicitud_aprobar}}",
+            "aprobar"
+          ]
+        },
+        "description": "Usa solicitud pendiente o en revisión con perfil inactivo. Esta operación activa el perfil y genera notificación por Observer.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"comentario_revision\": \"La información fue validada.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Respuesta exitosa del contrato\", function () { pm.expect(body.success).to.eql(true); pm.expect(body).to.have.property(\"data\"); });",
+              "pm.test(\"Aprobada y perfil activo\", function () { pm.expect(body.data.estado.id_estado_solicitud).to.eql(3); pm.expect(body.data.perfil_activo).to.eql(true); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Rechazar solicitud (200)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion/{{id_solicitud_rechazar}}/rechazar",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion",
+            "{{id_solicitud_rechazar}}",
+            "rechazar"
+          ]
+        },
+        "description": "Usa otra solicitud pendiente o en revisión. El comentario es obligatorio. El Observer genera notificación.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"comentario_revision\": \"Falta documentación profesional.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Respuesta exitosa del contrato\", function () { pm.expect(body.success).to.eql(true); pm.expect(body).to.have.property(\"data\"); });",
+              "pm.test(\"Solicitud rechazada\", function () { pm.expect(body.data.estado.id_estado_solicitud).to.eql(4); pm.expect(body.data.comentario_revision).to.be.a(\"string\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Rechazar sin comentario (422)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion/{{id_solicitud_rechazar}}/rechazar",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion",
+            "{{id_solicitud_rechazar}}",
+            "rechazar"
+          ]
+        },
+        "description": "Validación 422 antes de comprobar el estado actual de la solicitud.",
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 422\", function () { pm.response.to.have.status(422); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Formato de error del contrato\", function () { pm.expect(body.success).to.eql(false); pm.expect(body).to.have.property(\"message\"); pm.expect(body).to.have.property(\"error_code\"); });",
+              "pm.test(\"Comentario obligatorio\", function () { pm.expect(body.errors).to.have.property(\"comentario_revision\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Consultar inexistente (404)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion/999999999",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion",
+            "999999999"
+          ]
+        },
+        "description": "Comprueba RESOURCE_NOT_FOUND."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Formato de error del contrato\", function () { pm.expect(body.success).to.eql(false); pm.expect(body).to.have.property(\"message\"); pm.expect(body).to.have.property(\"error_code\"); });",
+              "pm.test(\"Código estable\", function () { pm.expect(body.error_code).to.eql(\"RESOURCE_NOT_FOUND\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 - Aprobar inexistente (404)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion/999999999/aprobar",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion",
+            "999999999",
+            "aprobar"
+          ]
+        },
+        "description": "Comprueba RESOURCE_NOT_FOUND en transición.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"comentario_revision\": \"Test\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Formato de error del contrato\", function () { pm.expect(body.success).to.eql(false); pm.expect(body).to.have.property(\"message\"); pm.expect(body).to.have.property(\"error_code\"); });",
+              "pm.test(\"Código estable\", function () { pm.expect(body.error_code).to.eql(\"RESOURCE_NOT_FOUND\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 - Filtro inválido (422)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion?sort=nombre",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion"
+          ],
+          "query": [
+            {
+              "key": "sort",
+              "value": "nombre"
+            }
+          ]
+        },
+        "description": "Ordenamiento no permitido."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 422\", function () { pm.response.to.have.status(422); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Formato de error del contrato\", function () { pm.expect(body.success).to.eql(false); pm.expect(body).to.have.property(\"message\"); pm.expect(body).to.have.property(\"error_code\"); });",
+              "pm.test(\"Ordenamiento validado\", function () { pm.expect(body.errors).to.have.property(\"sort\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 - Usuario no administrador (403)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion"
+          ]
+        },
+        "description": "Define token_usuario con el token de un usuario no administrador.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token_usuario}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 403\", function () { pm.response.to.have.status(403); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Formato de error del contrato\", function () { pm.expect(body.success).to.eql(false); pm.expect(body).to.have.property(\"message\"); pm.expect(body).to.have.property(\"error_code\"); });",
+              "pm.test(\"Sin permisos\", function () { pm.expect(body.error_code).to.eql(\"FORBIDDEN\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 - Revisión duplicada (409)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion/{{id_solicitud_ya_revisada}}/revisar",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion",
+            "{{id_solicitud_ya_revisada}}",
+            "revisar"
+          ]
+        },
+        "description": "Define id_solicitud_ya_revisada con una solicitud que ya esté EN REVISIÓN o resuelta."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Formato de error del contrato\", function () { pm.expect(body.success).to.eql(false); pm.expect(body).to.have.property(\"message\"); pm.expect(body).to.have.property(\"error_code\"); });",
+              "pm.test(\"Transición inválida\", function () { pm.expect(body.error_code).to.eql(\"OPERATION_FAILED\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 - Aprobar solicitud resuelta (409)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/admin/solicitudes-habilitacion/{{id_solicitud_resuelta}}/aprobar",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "solicitudes-habilitacion",
+            "{{id_solicitud_resuelta}}",
+            "aprobar"
+          ]
+        },
+        "description": "Define id_solicitud_resuelta con una solicitud ya ACEPTADA o RECHAZADA.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"comentario_revision\": \"No se debe volver a resolver\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+              "const body = pm.response.json();",
+              "pm.test(\"Formato de error del contrato\", function () { pm.expect(body.success).to.eql(false); pm.expect(body).to.have.property(\"message\"); pm.expect(body).to.have.property(\"error_code\"); });",
+              "pm.test(\"No resuelve dos veces\", function () { pm.expect(body.error_code).to.eql(\"OPERATION_FAILED\"); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
