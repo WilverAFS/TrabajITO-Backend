@@ -1,0 +1,18 @@
+$kind: http-request
+description: Validación 422 antes de comprobar el estado actual de la solicitud.
+url: "{{base_url}}/api/v1/admin/solicitudes-habilitacion/{{id_solicitud_rechazar}}/rechazar"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: "{}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 422", function () { pm.response.to.have.status(422); });
+      const body = pm.response.json();
+      pm.test("Formato de error del contrato", function () { pm.expect(body.success).to.eql(false); pm.expect(body).to.have.property("message"); pm.expect(body).to.have.property("error_code"); });
+      pm.test("Comentario obligatorio", function () { pm.expect(body.errors).to.have.property("comentario_revision"); });
+    language: text/javascript
+order: 8000

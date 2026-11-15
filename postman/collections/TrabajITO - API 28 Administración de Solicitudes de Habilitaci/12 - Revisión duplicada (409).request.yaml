@@ -1,0 +1,13 @@
+$kind: http-request
+description: Define id_solicitud_ya_revisada con una solicitud que ya esté EN REVISIÓN o resuelta.
+url: "{{base_url}}/api/v1/admin/solicitudes-habilitacion/{{id_solicitud_ya_revisada}}/revisar"
+method: PATCH
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 409", function () { pm.response.to.have.status(409); });
+      const body = pm.response.json();
+      pm.test("Formato de error del contrato", function () { pm.expect(body.success).to.eql(false); pm.expect(body).to.have.property("message"); pm.expect(body).to.have.property("error_code"); });
+      pm.test("Transición inválida", function () { pm.expect(body.error_code).to.eql("OPERATION_FAILED"); });
+    language: text/javascript
+order: 13000

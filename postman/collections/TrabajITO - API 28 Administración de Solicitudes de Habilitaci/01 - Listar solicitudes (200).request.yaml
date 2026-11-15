@@ -1,0 +1,13 @@
+$kind: http-request
+description: Token de administrador requerido. Respuesta paginada de SolicitudHabilitacionResource.
+url: "{{base_url}}/api/v1/admin/solicitudes-habilitacion"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      const body = pm.response.json();
+      pm.test("Respuesta exitosa del contrato", function () { pm.expect(body.success).to.eql(true); pm.expect(body).to.have.property("data"); });
+      pm.test("Listado y metadatos", function () { pm.expect(body.data).to.be.an("array"); pm.expect(body.meta).to.have.all.keys("current_page","per_page","last_page","total"); pm.expect(body.links).to.have.all.keys("first","last","prev","next"); });
+    language: text/javascript
+order: 2000

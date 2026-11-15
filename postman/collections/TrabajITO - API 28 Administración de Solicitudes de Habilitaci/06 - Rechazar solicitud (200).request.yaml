@@ -1,0 +1,21 @@
+$kind: http-request
+description: Usa otra solicitud pendiente o en revisión. El comentario es obligatorio. El Observer genera notificación.
+url: "{{base_url}}/api/v1/admin/solicitudes-habilitacion/{{id_solicitud_rechazar}}/rechazar"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "comentario_revision": "Falta documentación profesional."
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      const body = pm.response.json();
+      pm.test("Respuesta exitosa del contrato", function () { pm.expect(body.success).to.eql(true); pm.expect(body).to.have.property("data"); });
+      pm.test("Solicitud rechazada", function () { pm.expect(body.data.estado.id_estado_solicitud).to.eql(4); pm.expect(body.data.comentario_revision).to.be.a("string"); });
+    language: text/javascript
+order: 7000

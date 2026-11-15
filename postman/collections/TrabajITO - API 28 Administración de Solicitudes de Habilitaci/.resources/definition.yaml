@@ -1,0 +1,22 @@
+$kind: collection
+name: TrabajITO - API 28 Administración de Solicitudes de Habilitación
+description: |-
+  Colección Postman v2.1 para revisar API 28 conforme al Contrato de API REST v1 de TrabajITO.
+
+  CONFIGURACIÓN: 1) Iniciar sesión como administrador por el mecanismo del proyecto; 2) pegar el token SOLO en la variable local token_admin de Postman; 3) definir IDs existentes en las variables id_solicitud_* (usar registros distintos para las operaciones que cambian estado); 4) opcional: token_usuario para la prueba 403.
+
+  IMPORTANTE: No se incluyen credenciales ni tokens reales. Las pruebas 04, 05, 06, 12 y 13 modifican el estado de solicitudes: probar únicamente con datos de prueba. No ejecutar toda la colección en bloque sin preparar los IDs. El usuario administrador debe tener es_administrador=true y activo=true.
+variables:
+  base_url: http://127.0.0.1:8000
+  token_admin: ""
+  token_usuario: ""
+  id_solicitud_consulta: ""
+  id_solicitud_revisar: ""
+  id_solicitud_aprobar: ""
+  id_solicitud_rechazar: ""
+  id_solicitud_ya_revisada: ""
+  id_solicitud_resuelta: ""
+auth:
+  type: bearer
+  credentials:
+    token: "{{token_admin}}"
