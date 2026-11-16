@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AccountController;
+use App\Http\Controllers\Api\V1\AdminOficioController;
 use App\Http\Controllers\Api\V1\AdminReporteController;
 use App\Http\Controllers\Api\V1\AdminSolicitudHabilitacionController;
 use App\Http\Controllers\Api\V1\AdminUsuarioController;
@@ -136,6 +137,14 @@ Route::prefix('v1')->group(function () {
                     ->whereNumber('id_reporte');
                 Route::patch('/reportes/{id_reporte}/resolver', [AdminReporteController::class, 'resolver'])
                     ->whereNumber('id_reporte');
+
+                // API 30: administración de oficios.
+                Route::get('/oficios', [AdminOficioController::class, 'index']);
+                Route::post('/oficios', [AdminOficioController::class, 'store']);
+                Route::patch('/oficios/{id_oficio}', [AdminOficioController::class, 'update'])
+                    ->whereNumber('id_oficio');
+                Route::patch('/oficios/{id_oficio}/desactivar', [AdminOficioController::class, 'desactivar'])
+                    ->whereNumber('id_oficio');
             });
     });
 });
