@@ -270,49 +270,50 @@ class AdminReporteController extends Controller
         ?string $resolucion = null
     ): JsonResponse {
 
-        $reporte = Reporte::query()
-            ->with(self::RELACIONES)
-            ->find($idReporte);
-
-        if (! $reporte) {
-            return $this->error(
-                'Reporte no encontrado.',
-                'RESOURCE_NOT_FOUND',
-                404
-            );
-        }
-
-        if ($reporte->id_estado_reporte === 3) {
-            return $this->error(
-                'El reporte ya fue resuelto.',
-                'REPORT_ALREADY_RESOLVED',
-                409
-            );
-        }
-
-        $transicionValida =
-            ($reporte->id_estado_reporte === 1 &&
-                in_array($nuevoEstado, [2, 3], true))
-            ||
-            ($reporte->id_estado_reporte === 2 &&
-                $nuevoEstado === 3);
-
-        if (! $transicionValida) {
-            return $this->error(
-                'La transición solicitada no es válida.',
-                'OPERATION_FAILED',
-                409
-            );
-        }
-
-        DB::transaction(function () use (
+        $resultado = DB::transaction(function () use (
             $request,
-            $reporte,
+            $idReporte,
             $nuevoEstado,
             $resolucion
         ) {
 
-            $reporte->id_estado_reporte = $nuevoEstado;
+            $reporte = Reporte::query()
+                ->lockForUpdate()
+                ->find($idReporte);
+
+            if (! $reporte) {
+                return $this->error(
+                    'Reporte no encontrado.',
+                    'RESOURCE_NOT_FOUND',
+                    404
+                );
+            }
+
+            if ($reporte->id_estado_reporte === 3) {
+                return $this->error(
+                    'El reporte ya fue resuelto.',
+                    'REPORT_ALREADY_RESOLVED',
+                    409
+                );
+            }
+
+            $transicionValida =
+                ($reporte->id_estado_reporte === 1 &&
+                    in_array($nuevoEstado, [2, 3], true))
+                ||
+                ($reporte->id_estado_reporte === 2 &&
+                    $nuevoEstado === 3);
+
+            if (! $transicionValida) {
+                return $this->error(
+                    'La transición solicitada no es válida.',
+                    'OPERATION_FAILED',
+                    409
+                );
+            }
+
+            $reporte->id_estado_reporte =
+                $nuevoEstado;
 
             $reporte->id_admin_moderador =
                 $request->user()->id_usuario;
@@ -327,15 +328,23 @@ class AdminReporteController extends Controller
             }
 
             $reporte->save();
+
+            $reporte->load(
+                self::RELACIONES
+            );
+
+            return $reporte;
         });
 
-        $reporte->load(self::RELACIONES);
+        if ($resultado instanceof JsonResponse) {
+            return $resultado;
+        }
 
         return response()->json([
             'success' => true,
             'message' => $mensaje,
             'data' => new AdminReporteResource(
-                $reporte
+                $resultado
             ),
         ]);
     }

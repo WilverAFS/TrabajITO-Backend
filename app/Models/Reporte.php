@@ -35,6 +35,7 @@ class Reporte extends Model
             'id_objetivo' => 'integer',
             'fecha_creacion' => 'datetime',
             'fecha_resolucion' => 'datetime',
+            'id_estado_reporte' => 'integer',
         ];
     }
 

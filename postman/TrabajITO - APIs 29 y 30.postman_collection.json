@@ -74,13 +74,55 @@
 						{
 							"listen": "test",
 							"script": {
-								"type": "text/javascript",
 								"exec": [
-									"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+									"pm.test(",
+									"    'HTTP 200',",
+									"    () => pm.response.to.have.status(200)",
+									");",
+									"",
 									"const b = pm.response.json();",
-									"pm.test('Listado exitoso', () => pm.expect(b.success).to.eql(true));",
-									"pm.test('Existe colección', () => pm.expect(b.data).to.be.an('array'));"
-								]
+									"",
+									"pm.test(",
+									"    'Listado exitoso',",
+									"    () => pm.expect(b.success).to.eql(true)",
+									");",
+									"",
+									"pm.test(",
+									"    'Existe colección',",
+									"    () => pm.expect(b.data).to.be.an('array')",
+									");",
+									"",
+									"const pendiente = b.data.find(",
+									"    reporte =>",
+									"        reporte.estado &&",
+									"        Number(",
+									"            reporte.estado.id_estado_reporte",
+									"        ) === 1",
+									");",
+									"",
+									"pm.test(",
+									"    'Existe un reporte pendiente',",
+									"    () => pm.expect(pendiente).to.exist",
+									");",
+									"",
+									"if (pendiente) {",
+									"",
+									"    pm.collectionVariables.set(",
+									"        'idReportePrueba',",
+									"        String(",
+									"            pendiente.id_reporte",
+									"        )",
+									"    );",
+									"",
+									"    console.log(",
+									"        'Reporte pendiente encontrado:',",
+									"        pendiente.id_reporte",
+									"    );",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
 							}
 						}
 					],
@@ -111,13 +153,39 @@
 						{
 							"listen": "test",
 							"script": {
-								"type": "text/javascript",
 								"exec": [
-									"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+									"pm.test(",
+									"    'HTTP 200',",
+									"    () => pm.response.to.have.status(200)",
+									");",
+									"",
 									"const b = pm.response.json();",
-									"pm.test('Consulta exitosa', () => pm.expect(b.success).to.eql(true));",
-									"pm.test('Reporte correcto', () => pm.expect(b.data.id_reporte).to.eql(1));"
-								]
+									"",
+									"pm.test(",
+									"    'Consulta exitosa',",
+									"    () => pm.expect(",
+									"        b.success",
+									"    ).to.eql(true)",
+									");",
+									"",
+									"pm.test(",
+									"    'Reporte correcto',",
+									"    () => pm.expect(",
+									"        Number(",
+									"            b.data.id_reporte",
+									"        )",
+									"    ).to.eql(",
+									"        Number(",
+									"            pm.collectionVariables.get(",
+									"                'idReportePrueba'",
+									"            )",
+									"        )",
+									"    )",
+									");"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
 							}
 						}
 					],
@@ -130,14 +198,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/admin/reportes/1",
+							"raw": "{{baseUrl}}/admin/reportes/{{idReportePrueba}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"admin",
 								"reportes",
-								"1"
+								"{{idReportePrueba}}"
 							]
 						}
 					},
@@ -150,7 +218,36 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test('HTTP 200 o 404', () => pm.expect(pm.response.code).to.be.oneOf([200,404]));"
+									"pm.test(",
+									"    'HTTP 200',",
+									"    () => pm.response.to.have.status(200)",
+									");",
+									"",
+									"const b = pm.response.json();",
+									"",
+									"pm.test(",
+									"    'Transición exitosa',",
+									"    () => pm.expect(b.success)",
+									"        .to.eql(true)",
+									");",
+									"",
+									"pm.test(",
+									"    'Estado ID correcto',",
+									"    () => pm.expect(",
+									"        Number(",
+									"            b.data.estado.id_estado_reporte",
+									"        )",
+									"    ).to.eql(2)",
+									");",
+									"",
+									"pm.test(",
+									"    'Estado descripción correcta',",
+									"    () => pm.expect(",
+									"        b.data.estado.estado_reporte",
+									"    ).to.eql(",
+									"        'En revisión'",
+									"    )",
+									");"
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -167,14 +264,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/admin/reportes/1/revisar",
+							"raw": "{{baseUrl}}/admin/reportes/{{idReportePrueba}}/revisar",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"admin",
 								"reportes",
-								"1",
+								"{{idReportePrueba}}",
 								"revisar"
 							]
 						}
@@ -188,7 +285,44 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test('Solicitud procesada', () => pm.expect(pm.response.code).to.be.oneOf([200,404,409]));"
+									"pm.test(",
+									"    'HTTP 200',",
+									"    () => pm.response.to.have.status(200)",
+									");",
+									"",
+									"const b = pm.response.json();",
+									"",
+									"pm.test(",
+									"    'Resolución exitosa',",
+									"    () => pm.expect(",
+									"        b.success",
+									"    ).to.eql(true)",
+									");",
+									"",
+									"pm.test(",
+									"    'Estado ID correcto',",
+									"    () => pm.expect(",
+									"        Number(",
+									"            b.data.estado.id_estado_reporte",
+									"        )",
+									"    ).to.eql(3)",
+									");",
+									"",
+									"pm.test(",
+									"    'Estado concluido',",
+									"    () => pm.expect(",
+									"        b.data.estado.estado_reporte",
+									"    ).to.eql(",
+									"        'Concluido'",
+									"    )",
+									");",
+									"",
+									"pm.test(",
+									"    'Existe resolución',",
+									"    () => pm.expect(",
+									"        b.data.resolucion",
+									"    ).to.not.eql(null)",
+									");"
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -211,6 +345,63 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"resolucion\": \"El contenido fue revisado y se registró la resolución administrativa.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/reportes/{{idReportePrueba}}/resolver",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"reportes",
+								"{{idReportePrueba}}",
+								"resolver"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05 - Rechazar resolución de reporte concluido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(",
+									"    'HTTP 409',",
+									"    () => pm.response.to.have.status(409)",
+									");",
+									"",
+									"const b = pm.response.json();",
+									"",
+									"pm.test(",
+									"    'Código correcto',",
+									"    () => pm.expect(",
+									"        b.error_code",
+									"    ).to.eql(",
+									"        'REPORT_ALREADY_RESOLVED'",
+									"    )",
+									");",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resolucion\": \"Intento de resolución duplicada.\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -433,6 +624,30 @@
 			}
 		]
 	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
 	"variable": [
 		{
 			"key": "baseUrl",
@@ -444,8 +659,12 @@
 		},
 		{
 			"key": "idOficioCreado",
+			"value": ""
+		},
+		{
+			"key": "idReportePrueba",
 			"value": "",
-			"type": "string"
+			"type": "default"
 		}
 	]
 }

@@ -110,6 +110,37 @@ class DatosPruebaSeeder extends Seeder
             );
 
             /*
+            * Reporte pendiente para pruebas
+            * administrativas de la API 29.
+            *
+            * Estado 1: Pendiente.
+            */
+            DB::table('reportes')->updateOrInsert(
+                ['id_reporte' => 2],
+                [
+                    'id_denunciante' => 2,
+
+                    'tipo_objetivo' => 'PUBLICACION',
+
+                    'id_objetivo' => 1,
+
+                    'id_admin_moderador' => null,
+
+                    'motivo' => 'Contenido potencialmente incorrecto',
+
+                    'descripcion' => 'Reporte de prueba pendiente para validar las transiciones administrativas.',
+
+                    'id_estado_reporte' => 1,
+
+                    'resolucion' => null,
+
+                    'fecha_creacion' => now()->subDays(2),
+
+                    'fecha_resolucion' => null,
+                ]
+            );
+
+            /*
              * Notificaciones.
              */
             DB::table('notificaciones')->upsert(
