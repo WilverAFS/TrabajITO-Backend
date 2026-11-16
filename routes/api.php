@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AccountController;
+use App\Http\Controllers\Api\V1\AdminOficioController;
+use App\Http\Controllers\Api\V1\AdminReporteController;
+use App\Http\Controllers\Api\V1\AdminSolicitudHabilitacionController;
 use App\Http\Controllers\Api\V1\AdminUsuarioController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CatalogoController;
@@ -17,7 +20,6 @@ use App\Http\Controllers\Api\V1\SolicitudHabilitacionController;
 use App\Http\Controllers\Api\V1\TrabajadorController;
 use App\Http\Controllers\Api\V1\ValoracionController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\AdminSolicitudHabilitacionController;
 
 Route::prefix('v1')->group(function () {
     // Registro e inicio de sesión.
@@ -126,6 +128,23 @@ Route::prefix('v1')->group(function () {
                     ->whereNumber('id_solicitud');
                 Route::patch('/solicitudes-habilitacion/{id_solicitud}/rechazar', [AdminSolicitudHabilitacionController::class, 'rechazar'])
                     ->whereNumber('id_solicitud');
+
+                // API 29: administración de reportes.
+                Route::get('/reportes', [AdminReporteController::class, 'index']);
+                Route::get('/reportes/{id_reporte}', [AdminReporteController::class, 'show'])
+                    ->whereNumber('id_reporte');
+                Route::patch('/reportes/{id_reporte}/revisar', [AdminReporteController::class, 'revisar'])
+                    ->whereNumber('id_reporte');
+                Route::patch('/reportes/{id_reporte}/resolver', [AdminReporteController::class, 'resolver'])
+                    ->whereNumber('id_reporte');
+
+                // API 30: administración de oficios.
+                Route::get('/oficios', [AdminOficioController::class, 'index']);
+                Route::post('/oficios', [AdminOficioController::class, 'store']);
+                Route::patch('/oficios/{id_oficio}', [AdminOficioController::class, 'update'])
+                    ->whereNumber('id_oficio');
+                Route::patch('/oficios/{id_oficio}/desactivar', [AdminOficioController::class, 'desactivar'])
+                    ->whereNumber('id_oficio');
             });
     });
 });

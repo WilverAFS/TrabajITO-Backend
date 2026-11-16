@@ -1,0 +1,670 @@
+{
+	"info": {
+		"_postman_id": "7737d983-2f8b-4ce7-8ed3-7f686da4d61a",
+		"name": "TrabajITO - APIs 29 y 30",
+		"description": "Colección de pruebas para las APIs administrativas 29 y 30.\n\nAPI 29: Administración de reportes.\nAPI 30: Administración de oficios.\n\nRequisitos:\n1. Ejecutar php artisan migrate:fresh --seed.\n2. Iniciar el backend con php artisan serve.\n3. Ejecutar la carpeta de preparación primero.\n4. Utiliza el usuario administrador sembrado por UsuarioSeeder.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "56497863"
+	},
+	"item": [
+		{
+			"name": "00 - Preparación administrador",
+			"item": [
+				{
+					"name": "01 - Login administrador",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+									"const b = pm.response.json();",
+									"pm.test('Login exitoso', () => pm.expect(b.success).to.eql(true));",
+									"pm.collectionVariables.set('authToken', b.data.token);"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"correo\": \"admin@trabajito.test\",\n  \"password\": \"Admin12345!\",\n  \"device_name\": \"TrabajITO Postman APIs 29-30\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "API 29 - Administración de reportes",
+			"item": [
+				{
+					"name": "01 - Listar reportes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(",
+									"    'HTTP 200',",
+									"    () => pm.response.to.have.status(200)",
+									");",
+									"",
+									"const b = pm.response.json();",
+									"",
+									"pm.test(",
+									"    'Listado exitoso',",
+									"    () => pm.expect(b.success).to.eql(true)",
+									");",
+									"",
+									"pm.test(",
+									"    'Existe colección',",
+									"    () => pm.expect(b.data).to.be.an('array')",
+									");",
+									"",
+									"const pendiente = b.data.find(",
+									"    reporte =>",
+									"        reporte.estado &&",
+									"        Number(",
+									"            reporte.estado.id_estado_reporte",
+									"        ) === 1",
+									");",
+									"",
+									"pm.test(",
+									"    'Existe un reporte pendiente',",
+									"    () => pm.expect(pendiente).to.exist",
+									");",
+									"",
+									"if (pendiente) {",
+									"",
+									"    pm.collectionVariables.set(",
+									"        'idReportePrueba',",
+									"        String(",
+									"            pendiente.id_reporte",
+									"        )",
+									"    );",
+									"",
+									"    console.log(",
+									"        'Reporte pendiente encontrado:',",
+									"        pendiente.id_reporte",
+									"    );",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/reportes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"reportes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02 - Consultar reporte existente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(",
+									"    'HTTP 200',",
+									"    () => pm.response.to.have.status(200)",
+									");",
+									"",
+									"const b = pm.response.json();",
+									"",
+									"pm.test(",
+									"    'Consulta exitosa',",
+									"    () => pm.expect(",
+									"        b.success",
+									"    ).to.eql(true)",
+									");",
+									"",
+									"pm.test(",
+									"    'Reporte correcto',",
+									"    () => pm.expect(",
+									"        Number(",
+									"            b.data.id_reporte",
+									"        )",
+									"    ).to.eql(",
+									"        Number(",
+									"            pm.collectionVariables.get(",
+									"                'idReportePrueba'",
+									"            )",
+									"        )",
+									"    )",
+									");"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/reportes/{{idReportePrueba}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"reportes",
+								"{{idReportePrueba}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03 - Marcar reporte en revisión",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(",
+									"    'HTTP 200',",
+									"    () => pm.response.to.have.status(200)",
+									");",
+									"",
+									"const b = pm.response.json();",
+									"",
+									"pm.test(",
+									"    'Transición exitosa',",
+									"    () => pm.expect(b.success)",
+									"        .to.eql(true)",
+									");",
+									"",
+									"pm.test(",
+									"    'Estado ID correcto',",
+									"    () => pm.expect(",
+									"        Number(",
+									"            b.data.estado.id_estado_reporte",
+									"        )",
+									"    ).to.eql(2)",
+									");",
+									"",
+									"pm.test(",
+									"    'Estado descripción correcta',",
+									"    () => pm.expect(",
+									"        b.data.estado.estado_reporte",
+									"    ).to.eql(",
+									"        'En revisión'",
+									"    )",
+									");"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/reportes/{{idReportePrueba}}/revisar",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"reportes",
+								"{{idReportePrueba}}",
+								"revisar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04 - Resolver reporte",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(",
+									"    'HTTP 200',",
+									"    () => pm.response.to.have.status(200)",
+									");",
+									"",
+									"const b = pm.response.json();",
+									"",
+									"pm.test(",
+									"    'Resolución exitosa',",
+									"    () => pm.expect(",
+									"        b.success",
+									"    ).to.eql(true)",
+									");",
+									"",
+									"pm.test(",
+									"    'Estado ID correcto',",
+									"    () => pm.expect(",
+									"        Number(",
+									"            b.data.estado.id_estado_reporte",
+									"        )",
+									"    ).to.eql(3)",
+									");",
+									"",
+									"pm.test(",
+									"    'Estado concluido',",
+									"    () => pm.expect(",
+									"        b.data.estado.estado_reporte",
+									"    ).to.eql(",
+									"        'Concluido'",
+									"    )",
+									");",
+									"",
+									"pm.test(",
+									"    'Existe resolución',",
+									"    () => pm.expect(",
+									"        b.data.resolucion",
+									"    ).to.not.eql(null)",
+									");"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resolucion\": \"El contenido fue revisado y se registró la resolución administrativa.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/reportes/{{idReportePrueba}}/resolver",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"reportes",
+								"{{idReportePrueba}}",
+								"resolver"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05 - Rechazar resolución de reporte concluido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(",
+									"    'HTTP 409',",
+									"    () => pm.response.to.have.status(409)",
+									");",
+									"",
+									"const b = pm.response.json();",
+									"",
+									"pm.test(",
+									"    'Código correcto',",
+									"    () => pm.expect(",
+									"        b.error_code",
+									"    ).to.eql(",
+									"        'REPORT_ALREADY_RESOLVED'",
+									"    )",
+									");",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"resolucion\": \"Intento de resolución duplicada.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/reportes/1/resolver",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"reportes",
+								"1",
+								"resolver"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "API 30 - Administración de oficios",
+			"item": [
+				{
+					"name": "01 - Listar oficios",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('HTTP 200 - Oficios obtenidos', () => pm.response.to.have.status(200));",
+									"const b = pm.response.json();",
+									"pm.test('Consulta exitosa', () => pm.expect(b.success).to.eql(true));",
+									"pm.test('Retorna colección', () => pm.expect(b.data).to.be.an('array'));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/oficios",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"oficios"
+							]
+						},
+						"description": "Obtiene todos los oficios, incluyendo activos e inactivos."
+					},
+					"response": []
+				},
+				{
+					"name": "02 - Crear oficio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('HTTP 201 - Oficio creado', () => pm.response.to.have.status(201));",
+									"const b = pm.response.json();",
+									"pm.test('Creación exitosa', () => pm.expect(b.success).to.eql(true));",
+									"pm.test('Oficio activo por defecto', () => pm.expect(b.data.activo).to.eql(true));",
+									"pm.collectionVariables.set('idOficioCreado', String(b.data.id_oficio));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Cerrajería\",\n  \"descripcion\": \"Apertura, instalación y reparación de cerraduras.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/oficios",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"oficios"
+							]
+						},
+						"description": "Crea un nuevo oficio administrativo."
+					},
+					"response": []
+				},
+				{
+					"name": "03 - Actualizar oficio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('HTTP 200 - Oficio actualizado', () => pm.response.to.have.status(200));",
+									"const b = pm.response.json();",
+									"pm.test('Actualización exitosa', () => pm.expect(b.success).to.eql(true));",
+									"pm.test('Nombre actualizado', () => pm.expect(b.data.nombre).to.eql('Cerrajería residencial'));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Cerrajería residencial\",\n  \"descripcion\": \"Instalación y reparación de cerraduras residenciales.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/oficios/{{idOficioCreado}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"oficios",
+								"{{idOficioCreado}}"
+							]
+						},
+						"description": "Actualiza parcialmente un oficio creado por la colección."
+					},
+					"response": []
+				},
+				{
+					"name": "04 - Desactivar oficio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('HTTP 200 - Oficio desactivado', () => pm.response.to.have.status(200));",
+									"const b = pm.response.json();",
+									"pm.test('Operación exitosa', () => pm.expect(b.success).to.eql(true));",
+									"pm.test('Oficio inactivo', () => pm.expect(b.data.activo).to.eql(false));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/oficios/{{idOficioCreado}}/desactivar",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"admin",
+								"oficios",
+								"{{idOficioCreado}}",
+								"desactivar"
+							]
+						},
+						"description": "Desactiva el oficio creado durante la ejecución de la colección."
+					},
+					"response": []
+				}
+			],
+			"description": "Pruebas administrativas para la gestión de oficios."
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{authToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://127.0.0.1:8000/api/v1"
+		},
+		{
+			"key": "authToken",
+			"value": ""
+		},
+		{
+			"key": "idOficioCreado",
+			"value": ""
+		},
+		{
+			"key": "idReportePrueba",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
