@@ -36,7 +36,7 @@ class AdminReporteResource extends JsonResource
                 ]
                 : null,
 
-            'moderador' => $this->relationLoaded('moderador')
+            'administrador_moderador' => $this->relationLoaded('moderador')
                 && $this->moderador
                 ? [
                     'id_usuario' => $this->moderador->id_usuario,

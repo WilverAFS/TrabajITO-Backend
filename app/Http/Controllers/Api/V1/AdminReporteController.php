@@ -18,7 +18,7 @@ class AdminReporteController extends Controller
     private const RELACIONES = [
         'estado',
         'denunciante',
-        'administrador_moderador',
+        'moderador',
     ];
 
     // GET /api/v1/admin/reportes
