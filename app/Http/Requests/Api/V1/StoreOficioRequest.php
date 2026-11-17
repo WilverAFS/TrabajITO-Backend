@@ -2,23 +2,36 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Models\Oficio;
+use App\Support\ValidationRules;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreOficioRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, mixed>
-     */
+    protected function prepareForValidation(): void
+    {
+        $datos = [];
+
+        foreach (['nombre', 'descripcion'] as $campo) {
+            $valor = $this->input($campo);
+
+            if (is_string($valor)) {
+                $datos[$campo] = trim($valor);
+            }
+        }
+
+        if ($datos !== []) {
+            $this->merge($datos);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -26,14 +39,48 @@ class StoreOficioRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                'unique:oficios,nombre',
+                ValidationRules::nombreEspanol(),
+                Rule::unique('oficios', 'nombre'),
             ],
-
             'descripcion' => [
                 'required',
                 'string',
                 'max:500',
             ],
+        ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            if ($validator->errors()->has('nombre')) {
+                return;
+            }
+
+            $nombre = $this->input('nombre');
+
+            if (! is_string($nombre)) {
+                return;
+            }
+
+            $duplicado = Oficio::query()
+                ->whereRaw('LOWER(nombre) = ?', [mb_strtolower($nombre, 'UTF-8')])
+                ->exists();
+
+            if ($duplicado) {
+                $validator->errors()->add(
+                    'nombre',
+                    'Ya existe un oficio con ese nombre, sin distinguir mayúsculas y minúsculas.'
+                );
+            }
+        });
+    }
+
+    public function messages(): array
+    {
+        return [
+            'nombre.regex' => 'El nombre del oficio solo puede contener letras y espacios.',
+            'descripcion.required' => 'La descripción del oficio es obligatoria.',
         ];
     }
 }

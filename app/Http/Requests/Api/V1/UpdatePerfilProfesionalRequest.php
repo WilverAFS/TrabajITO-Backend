@@ -10,7 +10,16 @@ class UpdatePerfilProfesionalRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user() !== null;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $descripcion = $this->input('descripcion');
+
+        if (is_string($descripcion)) {
+            $this->merge(['descripcion' => trim($descripcion)]);
+        }
     }
 
     public function rules(): array
@@ -20,14 +29,16 @@ class UpdatePerfilProfesionalRequest extends FormRequest
                 'sometimes',
                 'required',
                 'integer',
+                'min:1',
                 Rule::exists('municipios', 'id_municipio')
                     ->where(fn ($query) => $query->where('activo', true)),
             ],
-
             'descripcion' => [
                 'sometimes',
                 'required',
                 'string',
+                'min:10',
+                'max:2000',
             ],
         ];
     }
@@ -38,8 +49,8 @@ class UpdatePerfilProfesionalRequest extends FormRequest
             $datos = $this->all();
 
             if (
-                !array_key_exists('id_municipio', $datos) &&
-                !array_key_exists('descripcion', $datos)
+                ! array_key_exists('id_municipio', $datos) &&
+                ! array_key_exists('descripcion', $datos)
             ) {
                 $validator->errors()->add(
                     'perfil',
@@ -47,5 +58,13 @@ class UpdatePerfilProfesionalRequest extends FormRequest
                 );
             }
         });
+    }
+
+    public function messages(): array
+    {
+        return [
+            'descripcion.min' => 'La descripción profesional debe contener al menos 10 caracteres.',
+            'descripcion.max' => 'La descripción profesional no puede superar 2000 caracteres.',
+        ];
     }
 }

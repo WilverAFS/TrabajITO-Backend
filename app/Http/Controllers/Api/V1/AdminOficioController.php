@@ -3,29 +3,29 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\BuscarOficiosRequest;
 use App\Http\Requests\Api\V1\StoreOficioRequest;
 use App\Http\Requests\Api\V1\UpdateOficioRequest;
 use App\Http\Resources\Api\V1\AdminOficioResource;
 use App\Models\Oficio;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class AdminOficioController extends Controller
 {
     /**
      * GET /api/v1/admin/oficios
      */
-    public function index(
-        Request $request
-    ): JsonResponse {
+    public function index(BuscarOficiosRequest $request): JsonResponse
+    {
+        $filtros = $request->validated();
+        $buscar = $filtros['buscar'] ?? null;
 
         $query = Oficio::query();
 
-        if ($request->filled('buscar')) {
-            $query->where(
-                'nombre',
-                'ILIKE',
-                '%'.$request->string('buscar').'%'
+        if ($buscar !== null && $buscar !== '') {
+            $query->whereRaw(
+                'LOWER(nombre) LIKE ?',
+                ['%' . mb_strtolower($buscar, 'UTF-8') . '%']
             );
         }
 
@@ -36,31 +36,27 @@ class AdminOficioController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Oficios obtenidos correctamente.',
-            'data' => AdminOficioResource::collection(
-                $oficios
-            ),
+            'data' => AdminOficioResource::collection($oficios),
         ]);
     }
 
     /**
      * POST /api/v1/admin/oficios
      */
-    public function store(
-        StoreOficioRequest $request
-    ): JsonResponse {
+    public function store(StoreOficioRequest $request): JsonResponse
+    {
+        $datos = $request->validated();
 
         $oficio = Oficio::create([
-            'nombre' => $request->validated()['nombre'],
-            'descripcion' => $request->validated()['descripcion'],
+            'nombre' => $datos['nombre'],
+            'descripcion' => $datos['descripcion'],
             'activo' => true,
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Oficio creado correctamente.',
-            'data' => new AdminOficioResource(
-                $oficio
-            ),
+            'data' => new AdminOficioResource($oficio),
         ], 201);
     }
 
@@ -71,7 +67,6 @@ class AdminOficioController extends Controller
         UpdateOficioRequest $request,
         int $id_oficio
     ): JsonResponse {
-
         $oficio = Oficio::find($id_oficio);
 
         if (! $oficio) {
@@ -82,28 +77,21 @@ class AdminOficioController extends Controller
             );
         }
 
-        $oficio->fill(
-            $request->validated()
-        );
-
+        $oficio->fill($request->validated());
         $oficio->save();
 
         return response()->json([
             'success' => true,
             'message' => 'Oficio actualizado correctamente.',
-            'data' => new AdminOficioResource(
-                $oficio
-            ),
+            'data' => new AdminOficioResource($oficio),
         ]);
     }
 
     /**
      * PATCH /api/v1/admin/oficios/{id_oficio}/desactivar
      */
-    public function desactivar(
-        int $id_oficio
-    ): JsonResponse {
-
+    public function desactivar(int $id_oficio): JsonResponse
+    {
         $oficio = Oficio::find($id_oficio);
 
         if (! $oficio) {
@@ -115,7 +103,6 @@ class AdminOficioController extends Controller
         }
 
         $oficio->activo = false;
-
         $oficio->save();
 
         return response()->json([

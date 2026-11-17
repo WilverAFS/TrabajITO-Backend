@@ -9,7 +9,7 @@ class UpdatePerfilOficiosRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user() !== null;
     }
 
     public function rules(): array
@@ -20,15 +20,13 @@ class UpdatePerfilOficiosRequest extends FormRequest
                 'array',
                 'min:1',
             ],
-
             'oficios.*' => [
                 'required',
                 'integer',
+                'min:1',
                 'distinct',
                 Rule::exists('oficios', 'id_oficio')
-                    ->where(
-                        fn ($query) => $query->where('activo', true)
-                    ),
+                    ->where(fn ($query) => $query->where('activo', true)),
             ],
         ];
     }
