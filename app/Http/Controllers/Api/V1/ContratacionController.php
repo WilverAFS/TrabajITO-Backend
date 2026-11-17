@@ -114,6 +114,7 @@ class ContratacionController extends Controller
                 'sometimes',
                 'integer',
                 'min:1',
+                'exists:estados_contratacion,id_estado_contratacion',
             ],
             'page' => [
                 'sometimes',
