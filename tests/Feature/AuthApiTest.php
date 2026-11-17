@@ -205,7 +205,7 @@ class AuthApiTest extends TestCase
         $this->assertDatabaseCount('personal_access_tokens', 0);
     }
 
-    public function test_login_requiere_nombre_del_dispositivo(): void
+    public function test_login_usa_nombre_del_dispositivo_predeterminado(): void
     {
         $usuario = $this->crearUsuario();
 
@@ -214,9 +214,13 @@ class AuthApiTest extends TestCase
             'password' => 'Prueba123!',
         ]);
 
-        $respuesta->assertStatus(422)
-            ->assertJsonPath('error_code', 'VALIDATION_ERROR')
-            ->assertJsonValidationErrors(['device_name']);
+        $respuesta->assertOk()
+            ->assertJsonPath('success', true);
+
+        $this->assertDatabaseHas('personal_access_tokens', [
+            'tokenable_id' => $usuario->id_usuario,
+            'name' => 'TrabajITO Web',
+        ]);
     }
 
     public function test_consulta_del_usuario_requiere_autenticacion(): void
