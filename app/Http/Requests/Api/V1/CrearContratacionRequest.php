@@ -16,6 +16,15 @@ class CrearContratacionRequest extends FormRequest
         return $this->user() !== null;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $descripcion = $this->input('descripcion_servicio');
+
+        if (is_string($descripcion)) {
+            $this->merge(['descripcion_servicio' => trim($descripcion)]);
+        }
+    }
+
     /**
      * Validaciones de la solicitud.
      */
@@ -25,16 +34,14 @@ class CrearContratacionRequest extends FormRequest
             'id_trabajador' => [
                 'required',
                 'integer',
-                Rule::exists(
-                    'perfiles_profesionales',
-                    'id_trabajador'
-                ),
+                'min:1',
+                Rule::exists('perfiles_profesionales', 'id_trabajador'),
             ],
-
             'descripcion_servicio' => [
                 'required',
                 'string',
-                'min:1',
+                'min:10',
+                'max:2000',
             ],
         ];
     }
@@ -45,23 +52,13 @@ class CrearContratacionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'id_trabajador.required' =>
-                'Debes seleccionar un trabajador.',
-
-            'id_trabajador.integer' =>
-                'El identificador del trabajador debe ser válido.',
-
-            'id_trabajador.exists' =>
-                'El trabajador seleccionado no existe.',
-
-            'descripcion_servicio.required' =>
-                'Debes describir el servicio que necesitas.',
-
-            'descripcion_servicio.string' =>
-                'La descripción del servicio debe ser texto.',
-
-            'descripcion_servicio.min' =>
-                'La descripción del servicio no puede estar vacía.',
+            'id_trabajador.required' => 'Debes seleccionar un trabajador.',
+            'id_trabajador.integer' => 'El identificador del trabajador debe ser numérico.',
+            'id_trabajador.min' => 'El identificador del trabajador debe ser mayor que cero.',
+            'id_trabajador.exists' => 'El trabajador seleccionado no existe.',
+            'descripcion_servicio.required' => 'Debes describir el servicio que necesitas.',
+            'descripcion_servicio.min' => 'La descripción del servicio debe contener al menos 10 caracteres.',
+            'descripcion_servicio.max' => 'La descripción del servicio no puede superar 2000 caracteres.',
         ];
     }
 }

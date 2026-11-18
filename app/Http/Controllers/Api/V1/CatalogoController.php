@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\BuscarOficiosRequest;
 use App\Http\Resources\Api\V1\EstadoResource;
 use App\Http\Resources\Api\V1\MunicipioResource;
 use App\Http\Resources\Api\V1\OficioResource;
@@ -51,21 +52,21 @@ class CatalogoController extends Controller
             'data' => MunicipioResource::collection($municipios),
         ]);
     }
-
     /**
      * Obtener los oficios activos y permitir búsqueda por nombre.
      */
-    public function oficios(Request $request): JsonResponse
+    public function oficios(BuscarOficiosRequest $request): JsonResponse
     {
-        $buscar = trim((string) $request->query('buscar', ''));
+        $filtros = $request->validated();
+        $buscar = $filtros['buscar'] ?? null;
 
         $consulta = Oficio::query()
             ->where('activo', true);
 
-        if ($buscar !== '') {
+        if ($buscar !== null && $buscar !== '') {
             $consulta->whereRaw(
                 'LOWER(nombre) LIKE ?',
-                ['%' . mb_strtolower($buscar) . '%']
+                ['%' . mb_strtolower($buscar, 'UTF-8') . '%']
             );
         }
 
@@ -88,7 +89,7 @@ class CatalogoController extends Controller
     {
         $usuario = $request->user();
 
-        if (!$usuario instanceof User) {
+        if (! $usuario instanceof User) {
             return response()->json([
                 'success' => false,
                 'message' => 'No estás autenticado.',
@@ -102,7 +103,7 @@ class CatalogoController extends Controller
             ->where('activo', true)
             ->exists();
 
-        if (!$perfilHabilitado) {
+        if (! $perfilHabilitado) {
             return response()->json([
                 'success' => false,
                 'message' => 'No tienes un perfil profesional habilitado.',

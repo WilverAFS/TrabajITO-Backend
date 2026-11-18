@@ -17,6 +17,13 @@ class AdminUsuarioController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        // Normalizar el texto de búsqueda antes de validar los filtros.
+        $buscar = $request->query('buscar');
+
+        if (is_string($buscar)) {
+            $request->merge(['buscar' => trim($buscar)]);
+        }
+
         $filtros = $request->validate([
             'buscar' => ['sometimes', 'string', 'max:255'],
             'activo' => [

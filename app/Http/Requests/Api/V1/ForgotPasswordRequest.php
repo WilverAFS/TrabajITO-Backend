@@ -12,6 +12,17 @@ class ForgotPasswordRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $correo = $this->input('correo');
+
+        if (is_string($correo)) {
+            $this->merge([
+                'correo' => mb_strtolower(trim($correo), 'UTF-8'),
+            ]);
+        }
+    }
+
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */
@@ -20,7 +31,9 @@ class ForgotPasswordRequest extends FormRequest
         return [
             'correo' => [
                 'required',
+                'string',
                 'email',
+                'max:255',
             ],
         ];
     }

@@ -29,6 +29,7 @@ class AdminSolicitudHabilitacionController extends Controller
             'id_estado' => [
                 'sometimes',
                 'integer',
+                'min:1',
                 'exists:estados_solicitud,id_estado_solicitud',
             ],
             'page' => ['sometimes', 'integer', 'min:1'],
@@ -125,8 +126,13 @@ class AdminSolicitudHabilitacionController extends Controller
         Request $request,
         int $id_solicitud
     ): JsonResponse {
+        $comentario = $request->input('comentario_revision');
+        if (is_string($comentario)) {
+            $request->merge(['comentario_revision' => trim($comentario)]);
+        }
+
         $datos = $request->validate([
-            'comentario_revision' => ['nullable', 'string'],
+            'comentario_revision' => ['nullable', 'string', 'max:2000'],
         ]);
 
         return $this->transicionar(
@@ -143,8 +149,13 @@ class AdminSolicitudHabilitacionController extends Controller
         Request $request,
         int $id_solicitud
     ): JsonResponse {
+        $comentario = $request->input('comentario_revision');
+        if (is_string($comentario)) {
+            $request->merge(['comentario_revision' => trim($comentario)]);
+        }
+
         $datos = $request->validate([
-            'comentario_revision' => ['required', 'string'],
+            'comentario_revision' => ['required', 'string', 'min:3', 'max:2000'],
         ]);
 
         return $this->transicionar(

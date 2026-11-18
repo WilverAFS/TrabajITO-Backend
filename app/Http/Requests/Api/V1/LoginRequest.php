@@ -15,12 +15,22 @@ class LoginRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $datos = [];
         $correo = $this->input('correo');
 
         if (is_string($correo)) {
-            $this->merge([
-                'correo' => mb_strtolower(trim($correo)),
-            ]);
+            $datos['correo'] = mb_strtolower(trim($correo), 'UTF-8');
+        }
+
+        // El contrato API v1 define device_name como opcional.
+        if (! $this->exists('device_name')) {
+            $datos['device_name'] = 'TrabajITO Web';
+        } elseif (is_string($this->input('device_name'))) {
+            $datos['device_name'] = trim($this->input('device_name'));
+        }
+
+        if ($datos !== []) {
+            $this->merge($datos);
         }
     }
 
@@ -33,6 +43,7 @@ class LoginRequest extends FormRequest
                 'email',
                 'max:255',
             ],
+            // No se exige complejidad aquí: se permiten contraseñas heredadas.
             'password' => [
                 'required',
                 'string',
@@ -51,7 +62,7 @@ class LoginRequest extends FormRequest
             'correo.required' => 'El correo es obligatorio.',
             'correo.email' => 'El correo debe ser válido.',
             'password.required' => 'La contraseña es obligatoria.',
-            'device_name.required' => 'El nombre del dispositivo es obligatorio.',
+            'device_name.required' => 'El nombre del dispositivo no puede estar vacío.',
             'device_name.max' => 'El nombre del dispositivo no puede superar 255 caracteres.',
         ];
     }

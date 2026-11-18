@@ -24,10 +24,17 @@ class AdminReporteController extends Controller
     // GET /api/v1/admin/reportes
     public function index(Request $request): JsonResponse
     {
+        $buscar = $request->query('buscar');
+        if (is_string($buscar)) {
+            $request->merge(['buscar' => trim($buscar)]);
+        }
+
         $filtros = $request->validate([
             'id_estado' => [
                 'sometimes',
                 'integer',
+                'min:1',
+                'exists:estados_reporte,id_estado_reporte',
             ],
 
             'tipo_objetivo' => [
@@ -41,6 +48,7 @@ class AdminReporteController extends Controller
             'buscar' => [
                 'sometimes',
                 'string',
+                'max:150',
             ],
 
             'page' => [
