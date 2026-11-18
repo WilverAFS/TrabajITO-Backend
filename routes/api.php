@@ -30,12 +30,14 @@ Route::prefix('v1')->group(function () {
 
     // Catálogos públicos.
     Route::get('/estados', [CatalogoController::class, 'estados']);
-    Route::get('/estados/{id_estado}/municipios', [CatalogoController::class, 'municipios']);
+    Route::get('/estados/{id_estado}/municipios', [CatalogoController::class, 'municipios'])
+        ->whereNumber('id_estado');
     Route::get('/oficios', [CatalogoController::class, 'oficios']);
 
     // API 19: exploración pública de trabajadores.
     Route::get('/trabajadores', [TrabajadorController::class, 'index']);
-    Route::get('/trabajadores/{id_trabajador}', [TrabajadorController::class, 'show']);
+    Route::get('/trabajadores/{id_trabajador}', [TrabajadorController::class, 'show'])
+        ->whereNumber('id_trabajador');
 
     // Recuperación de contraseña.
     Route::post('/auth/forgot-password', [AccountController::class, 'forgotPassword'])
@@ -44,8 +46,10 @@ Route::prefix('v1')->group(function () {
         ->middleware('throttle:5,1');
 
     // Consultas públicas de publicaciones.
-    Route::get('/publicaciones/{id_publicacion}', [PublicacionController::class, 'show']);
-    Route::get('/publicaciones/trabajador/{id_trabajador}', [PublicacionController::class, 'publicacionesPorTrabajador']);
+    Route::get('/publicaciones/{id_publicacion}', [PublicacionController::class, 'show'])
+        ->whereNumber('id_publicacion');
+    Route::get('/publicaciones/trabajador/{id_trabajador}', [PublicacionController::class, 'publicacionesPorTrabajador'])
+        ->whereNumber('id_trabajador');
 
     // Rutas protegidas.
     Route::middleware('auth:sanctum')->group(function () {
@@ -64,61 +68,80 @@ Route::prefix('v1')->group(function () {
         // Disponibilidades.
         Route::get('/me/perfil/disponibilidades', [DisponibilidadController::class, 'index']);
         Route::post('/me/perfil/disponibilidades', [DisponibilidadController::class, 'store']);
-        Route::patch('/me/perfil/disponibilidades/{id_disponibilidad}', [DisponibilidadController::class, 'update']);
-        Route::delete('/me/perfil/disponibilidades/{id_disponibilidad}', [DisponibilidadController::class, 'destroy']);
+        Route::patch('/me/perfil/disponibilidades/{id_disponibilidad}', [DisponibilidadController::class, 'update'])
+            ->whereNumber('id_disponibilidad');
+        Route::delete('/me/perfil/disponibilidades/{id_disponibilidad}', [DisponibilidadController::class, 'destroy'])
+            ->whereNumber('id_disponibilidad');
 
         // Certificados.
         Route::get('/me/perfil/certificados', [CertificadoController::class, 'index']);
         Route::post('/me/perfil/certificados', [CertificadoController::class, 'store']);
-        Route::delete('/me/perfil/certificados/{id_certificado}', [CertificadoController::class, 'destroy']);
+        Route::delete('/me/perfil/certificados/{id_certificado}', [CertificadoController::class, 'destroy'])
+            ->whereNumber('id_certificado');
 
-        // API 18: solicitudes propias de habilitación.
+        // Solicitudes propias de habilitación.
         Route::post('/me/perfil/solicitudes-habilitacion', [SolicitudHabilitacionController::class, 'store']);
         Route::get('/me/perfil/solicitudes-habilitacion', [SolicitudHabilitacionController::class, 'index']);
 
-        // API 20: contrataciones.
+        // Contrataciones.
         Route::post('/contrataciones', [ContratacionController::class, 'store']);
         Route::get('/contrataciones', [ContratacionController::class, 'index']);
-        Route::get('/contrataciones/{id_contratacion}', [ContratacionController::class, 'show']);
-        Route::patch('/contrataciones/{contratacion:id_contratacion}/aceptar', [ContratacionTransicionController::class, 'aceptar']);
-        Route::patch('/contrataciones/{contratacion:id_contratacion}/rechazar', [ContratacionTransicionController::class, 'rechazar']);
-        Route::patch('/contrataciones/{contratacion:id_contratacion}/iniciar', [ContratacionTransicionController::class, 'iniciar']);
-        Route::patch('/contrataciones/{contratacion:id_contratacion}/finalizar', [ContratacionTransicionController::class, 'finalizar']);
-        Route::patch('/contrataciones/{contratacion:id_contratacion}/cancelar', [ContratacionTransicionController::class, 'cancelar']);
+        Route::get('/contrataciones/{id_contratacion}', [ContratacionController::class, 'show'])
+            ->whereNumber('id_contratacion');
+        Route::patch('/contrataciones/{contratacion:id_contratacion}/aceptar', [ContratacionTransicionController::class, 'aceptar'])
+            ->whereNumber('contratacion');
+        Route::patch('/contrataciones/{contratacion:id_contratacion}/rechazar', [ContratacionTransicionController::class, 'rechazar'])
+            ->whereNumber('contratacion');
+        Route::patch('/contrataciones/{contratacion:id_contratacion}/iniciar', [ContratacionTransicionController::class, 'iniciar'])
+            ->whereNumber('contratacion');
+        Route::patch('/contrataciones/{contratacion:id_contratacion}/finalizar', [ContratacionTransicionController::class, 'finalizar'])
+            ->whereNumber('contratacion');
+        Route::patch('/contrataciones/{contratacion:id_contratacion}/cancelar', [ContratacionTransicionController::class, 'cancelar'])
+            ->whereNumber('contratacion');
 
         // Publicaciones y evidencias.
-        Route::post('/contrataciones/{id_contratacion}/publicacion', [PublicacionController::class, 'store']);
-        Route::patch('/publicaciones/{id_publicacion}', [PublicacionController::class, 'update']);
+        Route::post('/contrataciones/{id_contratacion}/publicacion', [PublicacionController::class, 'store'])
+            ->whereNumber('id_contratacion');
+        Route::patch('/publicaciones/{id_publicacion}', [PublicacionController::class, 'update'])
+            ->whereNumber('id_publicacion');
         Route::get('/me/perfil/publicaciones', [PublicacionController::class, 'misPublicaciones']);
-        Route::patch('/admin/publicaciones/{id_publicacion}/ocultar', [PublicacionController::class, 'ocultar']);
-        Route::post('/publicaciones/{id_publicacion}/evidencias', [EvidenciaController::class, 'store']);
-        Route::delete('/evidencias/{id_evidencia}', [EvidenciaController::class, 'destroy']);
+        Route::patch('/admin/publicaciones/{id_publicacion}/ocultar', [PublicacionController::class, 'ocultar'])
+            ->whereNumber('id_publicacion');
+        Route::post('/publicaciones/{id_publicacion}/evidencias', [EvidenciaController::class, 'store'])
+            ->whereNumber('id_publicacion');
+        Route::delete('/evidencias/{id_evidencia}', [EvidenciaController::class, 'destroy'])
+            ->whereNumber('id_evidencia');
 
-        // API 24: valoraciones.
-        Route::post('/publicaciones/{id_publicacion}/valoracion', [ValoracionController::class, 'store']);
-        Route::patch('/valoraciones/{id_valoracion}', [ValoracionController::class, 'update']);
+        // Valoraciones.
+        Route::post('/publicaciones/{id_publicacion}/valoracion', [ValoracionController::class, 'store'])
+            ->whereNumber('id_publicacion');
+        Route::patch('/valoraciones/{id_valoracion}', [ValoracionController::class, 'update'])
+            ->whereNumber('id_valoracion');
 
-        // API 25: reportes.
+        // Reportes.
         Route::post('/reportes', [ReporteController::class, 'store']);
 
-        // API 26: notificaciones propias.
+        // Notificaciones.
         Route::get('/notificaciones/no-leidas/count', [NotificacionController::class, 'countNoLeidas']);
         Route::get('/notificaciones', [NotificacionController::class, 'index']);
         Route::patch('/notificaciones/leer-todas', [NotificacionController::class, 'marcarTodasComoLeidas']);
-        Route::patch('/notificaciones/{id_notificacion}/leer', [NotificacionController::class, 'marcarComoLeida']);
+        Route::patch('/notificaciones/{id_notificacion}/leer', [NotificacionController::class, 'marcarComoLeida'])
+            ->whereNumber('id_notificacion');
 
-        // APIs 27 y 28: rutas administrativas.
+        // Rutas administrativas.
         Route::prefix('admin')
             ->middleware('administrador')
             ->group(function () {
-
-                // API 27: administración de usuarios.
+                // Administración de usuarios.
                 Route::get('/usuarios', [AdminUsuarioController::class, 'index']);
-                Route::get('/usuarios/{id_usuario}', [AdminUsuarioController::class, 'show']);
-                Route::patch('/usuarios/{id_usuario}/suspender', [AdminUsuarioController::class, 'suspender']);
-                Route::patch('/usuarios/{id_usuario}/reactivar', [AdminUsuarioController::class, 'reactivar']);
+                Route::get('/usuarios/{id_usuario}', [AdminUsuarioController::class, 'show'])
+                    ->whereNumber('id_usuario');
+                Route::patch('/usuarios/{id_usuario}/suspender', [AdminUsuarioController::class, 'suspender'])
+                    ->whereNumber('id_usuario');
+                Route::patch('/usuarios/{id_usuario}/reactivar', [AdminUsuarioController::class, 'reactivar'])
+                    ->whereNumber('id_usuario');
 
-                // API 28: administración de solicitudes de habilitación.
+                // Administración de solicitudes de habilitación.
                 Route::get('/solicitudes-habilitacion', [AdminSolicitudHabilitacionController::class, 'index']);
                 Route::get('/solicitudes-habilitacion/{id_solicitud}', [AdminSolicitudHabilitacionController::class, 'show'])
                     ->whereNumber('id_solicitud');
