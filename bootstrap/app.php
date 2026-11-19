@@ -1,12 +1,17 @@
 <?php
 
 use App\Http\Middleware\EnsureAdministrator;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+
         $exceptions->render(function (
             AuthenticationException $exception,
             Request $request
@@ -38,6 +44,22 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (
+            AuthorizationException $exception,
+            Request $request
+        ) {
+            if (! $request->is('api/v1/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No tiene permisos para realizar esta acción.',
+                'error_code' => 'FORBIDDEN',
+                'errors' => null,
+            ], 403);
+        });
+
+        $exceptions->render(function (
             ValidationException $exception,
             Request $request
         ) {
@@ -52,4 +74,69 @@ return Application::configure(basePath: dirname(__DIR__))
                 'errors' => $exception->errors(),
             ], 422);
         });
-    })->create();
+
+        $exceptions->render(function (
+            ModelNotFoundException $exception,
+            Request $request
+        ) {
+            if (! $request->is('api/v1/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Recurso no encontrado.',
+                'error_code' => 'NOT_FOUND',
+                'errors' => null,
+            ], 404);
+        });
+
+        $exceptions->render(function (
+            NotFoundHttpException $exception,
+            Request $request
+        ) {
+            if (! $request->is('api/v1/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ruta no encontrada.',
+                'error_code' => 'NOT_FOUND',
+                'errors' => null,
+            ], 404);
+        });
+
+        $exceptions->render(function (
+            MethodNotAllowedHttpException $exception,
+            Request $request
+        ) {
+            if (! $request->is('api/v1/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Método HTTP no permitido.',
+                'error_code' => 'METHOD_NOT_ALLOWED',
+                'errors' => null,
+            ], 405);
+        });
+
+        $exceptions->render(function (
+            Throwable $exception,
+            Request $request
+        ) {
+            if (! $request->is('api/v1/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ha ocurrido un error interno del servidor.',
+                'error_code' => 'INTERNAL_SERVER_ERROR',
+                'errors' => null,
+            ], 500);
+        });
+    })
+    ->create();
