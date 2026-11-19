@@ -48,6 +48,14 @@ class User extends Authenticatable
     {
         return $this->correo;
     }
+    // Dirección para las notificaciones por correo
+    public function routeNotificationForMail($notification): string
+    {
+    return $this->correo;
+    }
+
+
+
 
     // 6. Conversiones de tipos
     protected function casts(): array
