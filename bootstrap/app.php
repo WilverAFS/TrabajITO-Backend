@@ -3,15 +3,15 @@
 use App\Http\Middleware\EnsureAdministrator;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Throwable;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -60,6 +60,22 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (
+            AccessDeniedHttpException $exception,
+            Request $request
+        ) {
+            if (! $request->is('api/v1/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No tiene permisos para realizar esta acción.',
+                'error_code' => 'FORBIDDEN',
+                'errors' => null,
+            ], 403);
+        });
+
+        $exceptions->render(function (
             ValidationException $exception,
             Request $request
         ) {
@@ -76,22 +92,6 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (
-            ModelNotFoundException $exception,
-            Request $request
-        ) {
-            if (! $request->is('api/v1/*')) {
-                return null;
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Recurso no encontrado.',
-                'error_code' => 'NOT_FOUND',
-                'errors' => null,
-            ], 404);
-        });
-
-        $exceptions->render(function (
             NotFoundHttpException $exception,
             Request $request
         ) {
@@ -101,7 +101,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return response()->json([
                 'success' => false,
-                'message' => 'Ruta no encontrada.',
+                'message' => 'Recurso no encontrado.',
                 'error_code' => 'NOT_FOUND',
                 'errors' => null,
             ], 404);
@@ -124,7 +124,23 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (
-            Throwable $exception,
+            TooManyRequestsHttpException $exception,
+            Request $request
+        ) {
+            if (! $request->is('api/v1/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ha excedido el número permitido de solicitudes. Intente nuevamente más tarde.',
+                'error_code' => 'TOO_MANY_REQUESTS',
+                'errors' => null,
+            ], 429);
+        });
+
+        $exceptions->render(function (
+            \Throwable $exception,
             Request $request
         ) {
             if (! $request->is('api/v1/*')) {
