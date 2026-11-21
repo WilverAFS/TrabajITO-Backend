@@ -117,6 +117,6 @@ class ApiExceptionHandlerTest extends TestCase
                 'success' => false,
                 'error_code' => 'TOO_MANY_REQUESTS',
                 'errors' => null,
-            ]);
+            ])->assertHeader('Retry-After');
     }
 }

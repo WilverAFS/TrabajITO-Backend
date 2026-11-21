@@ -9,6 +9,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
@@ -136,7 +137,23 @@ return Application::configure(basePath: dirname(__DIR__))
                 'message' => 'Ha excedido el número permitido de solicitudes. Intente nuevamente más tarde.',
                 'error_code' => 'TOO_MANY_REQUESTS',
                 'errors' => null,
-            ], 429);
+            ], 429, $exception->getHeaders());
+        });
+
+        $exceptions->render(function (
+            HttpExceptionInterface $exception,
+            Request $request
+        ) {
+            if (! $request->is('api/v1/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => $exception->getMessage() ?: 'Error en la solicitud.',
+                'error_code' => 'HTTP_ERROR',
+                'errors' => null,
+            ], $exception->getStatusCode(), $exception->getHeaders());
         });
 
         $exceptions->render(function (
