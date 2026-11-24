@@ -51,8 +51,8 @@ Route::prefix('v1')->group(function () {
     Route::get('/publicaciones/trabajador/{id_trabajador}', [PublicacionController::class, 'publicacionesPorTrabajador'])
         ->whereNumber('id_trabajador');
 
-    // Rutas protegidas.
-    Route::middleware('auth:sanctum')->group(function () {
+    // Rutas protegidas: requieren autenticación y una cuenta activa.
+    Route::middleware(['auth:sanctum', 'cuenta.activa'])->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::patch('/me', [AccountController::class, 'update']);
         Route::patch('/me/password', [AccountController::class, 'changePassword']);
@@ -113,8 +113,7 @@ Route::prefix('v1')->group(function () {
             ->whereNumber('id_evidencia');
 
         // Valoraciones.
-        Route::post('/publicaciones/{id_publicacion}/valoracion', [ValoracionController::class, 'store'])
-            ->whereNumber('id_publicacion');
+        Route::post('/publicaciones/{id_publicacion}/valoracion', [ValoracionController::class, 'store']);
         Route::patch('/valoraciones/{id_valoracion}', [ValoracionController::class, 'update'])
             ->whereNumber('id_valoracion');
 

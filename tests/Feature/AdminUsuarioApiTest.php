@@ -182,6 +182,78 @@ class AdminUsuarioApiTest extends TestCase
         ]);
     }
 
+    public function test_suspension_revoca_todos_los_tokens_y_bloquea_lectura_y_escritura(): void
+    {
+        $trabajador = $this->crearUsuario('sesiones-suspender@test.com');
+
+        $tokenSesionA = $trabajador->createToken('Sesion A')->plainTextToken;
+        $tokenSesionB = $trabajador->createToken('Sesion B')->plainTextToken;
+        $tokenAdministrador = $this->token($this->administrador);
+
+        $this->withToken($tokenAdministrador)
+            ->patchJson("/api/v1/admin/usuarios/{$trabajador->id_usuario}/suspender")
+            ->assertOk()
+            ->assertJsonPath('data.activo', false);
+
+        // Solo debe permanecer el token del administrador que ejecutó la suspensión.
+        $this->assertDatabaseCount('personal_access_tokens', 1);
+
+        $this->assertDatabaseMissing('personal_access_tokens', [
+            'tokenable_type' => User::class,
+            'tokenable_id' => $trabajador->id_usuario,
+        ]);
+
+        // Una sesión anterior no debe poder consultar su cuenta.
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($tokenSesionA)
+            ->getJson('/api/v1/me')
+            ->assertUnauthorized()
+            ->assertJsonPath('error_code', 'UNAUTHENTICATED');
+
+        // Otra sesión anterior tampoco debe consultar contrataciones.
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($tokenSesionB)
+            ->getJson('/api/v1/contrataciones')
+            ->assertUnauthorized()
+            ->assertJsonPath('error_code', 'UNAUTHENTICATED');
+
+        // La sesión revocada tampoco puede modificar la cuenta.
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($tokenSesionA)
+            ->patchJson('/api/v1/me', [
+                'nombre' => 'Cambio no autorizado',
+            ])
+            ->assertUnauthorized()
+            ->assertJsonPath('error_code', 'UNAUTHENTICATED');
+
+        $this->assertDatabaseHas('users', [
+            'id_usuario' => $trabajador->id_usuario,
+            'nombre' => 'Usuario',
+            'activo' => false,
+        ]);
+    }
+
+    public function test_middleware_bloquea_cuentas_inactivas_con_token_existente(): void
+    {
+        $usuario = $this->crearUsuario('middleware-inactivo@test.com');
+        $token = $this->token($usuario);
+
+        // Simula una cuenta inactiva cuyo token aún existe por una modificación externa.
+        $usuario->activo = false;
+        $usuario->save();
+
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($token)
+            ->getJson('/api/v1/me')
+            ->assertForbidden()
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('error_code', 'ACCOUNT_INACTIVE');
+    }
+
     public function test_reactivar_usuario_no_reactiva_su_perfil_profesional(): void
     {
         $trabajador = $this->crearUsuario('reactivar@test.com', false, false);

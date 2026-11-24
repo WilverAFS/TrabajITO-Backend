@@ -132,7 +132,8 @@ class AdminUsuarioController extends Controller
 
     /**
      * PATCH /api/v1/admin/usuarios/{id_usuario}/suspender
-     * La suspensión de la cuenta también suspende su perfil profesional.
+     * La suspensión de la cuenta también suspende su perfil profesional
+     * y revoca todas las sesiones activas del usuario.
      */
     public function suspender(
         Request $request,
@@ -158,6 +159,9 @@ class AdminUsuarioController extends Controller
                 $usuario->perfilProfesional->activo = false;
                 $usuario->perfilProfesional->save();
             }
+
+            // Revocar todos los tokens, incluidos los de otros dispositivos.
+            $usuario->tokens()->delete();
         });
 
         $usuario->refresh();
@@ -173,6 +177,7 @@ class AdminUsuarioController extends Controller
     /**
      * PATCH /api/v1/admin/usuarios/{id_usuario}/reactivar
      * La reactivación de la cuenta NO reactiva el perfil profesional.
+     * Las sesiones anteriores no se restauran; el usuario debe iniciar sesión.
      */
     public function reactivar(
         Request $request,
