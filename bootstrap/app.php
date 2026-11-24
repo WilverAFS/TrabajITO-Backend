@@ -8,6 +8,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -23,6 +24,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        /*
+         * Las solicitudes API no deben redirigirse a una ruta web "login".
+         * Si no están autenticadas, Authenticate lanzará AuthenticationException
+         * y el manejador de excepciones devolverá la respuesta JSON 401.
+         *
+         * Para rutas web se conserva la redirección si existe una ruta login.
+         */
+        $middleware->redirectGuestsTo(
+            fn (Request $request): ?string => $request->is('api/*')
+                ? null
+                : (Route::has('login') ? route('login') : null)
+        );
+
         $middleware->alias([
             'administrador' => EnsureAdministrator::class,
             'cuenta.activa' => EnsureActiveAccount::class,

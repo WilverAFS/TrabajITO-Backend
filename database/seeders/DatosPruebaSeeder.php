@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 class DatosPruebaSeeder extends Seeder
 {
@@ -110,32 +112,22 @@ class DatosPruebaSeeder extends Seeder
             );
 
             /*
-            * Reporte pendiente para pruebas
-            * administrativas de la API 29.
-            *
-            * Estado 1: Pendiente.
-            */
+             * Reporte pendiente para pruebas administrativas de la API 29.
+             *
+             * Estado 1: Pendiente.
+             */
             DB::table('reportes')->updateOrInsert(
                 ['id_reporte' => 2],
                 [
                     'id_denunciante' => 2,
-
                     'tipo_objetivo' => 'PUBLICACION',
-
                     'id_objetivo' => 1,
-
                     'id_admin_moderador' => null,
-
                     'motivo' => 'Contenido potencialmente incorrecto',
-
                     'descripcion' => 'Reporte de prueba pendiente para validar las transiciones administrativas.',
-
                     'id_estado_reporte' => 1,
-
                     'resolucion' => null,
-
                     'fecha_creacion' => now()->subDays(2),
-
                     'fecha_resolucion' => null,
                 ]
             );
@@ -196,6 +188,55 @@ class DatosPruebaSeeder extends Seeder
             $this->sincronizarSecuencia('reportes', 'id_reporte');
             $this->sincronizarSecuencia('notificaciones', 'id_notificacion');
         });
+
+        /*
+         * Los fixtures públicos solo se generan en entorno local para simular
+         * evidencias heredadas que BE-16 debe migrar al disco privado.
+         */
+        $this->asegurarArchivoHeredado(
+            'publicaciones/prueba/reparacion-electrica-1.jpg',
+            database_path('seeders/fixtures/reparacion-electrica-1.jpg')
+        );
+
+        $this->asegurarArchivoHeredado(
+            'publicaciones/prueba/reparacion-electrica-2.jpg',
+            database_path('seeders/fixtures/reparacion-electrica-2.jpg')
+        );
+    }
+
+    /**
+     * Crea el archivo heredado únicamente si no existe ya en ninguno de los
+     * discos. Así, volver a ejecutar el seeder después de migrar no repone
+     * una copia pública.
+     */
+    private function asegurarArchivoHeredado(
+        string $rutaDestino,
+        string $rutaFixture
+    ): void {
+        if (! app()->environment('local')) {
+            return;
+        }
+
+        $publico = Storage::disk('public');
+        $privado = Storage::disk('local');
+
+        if ($publico->exists($rutaDestino) || $privado->exists($rutaDestino)) {
+            return;
+        }
+
+        if (! is_file($rutaFixture)) {
+            throw new RuntimeException(
+                "No se encontró el fixture requerido: {$rutaFixture}"
+            );
+        }
+
+        $contenido = file_get_contents($rutaFixture);
+
+        if ($contenido === false || ! $publico->put($rutaDestino, $contenido)) {
+            throw new RuntimeException(
+                "No fue posible crear el archivo de prueba: {$rutaDestino}"
+            );
+        }
     }
 
     /**

@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 class PerfilProfesionalSeeder extends Seeder
 {
@@ -43,7 +45,7 @@ class PerfilProfesionalSeeder extends Seeder
              * Asociaciones con oficios (Tabla pivote).
              * Perfil 1: Electricidad y refrigeración.
              * Perfil 2: Plomería.
-             * 
+             *
              * Se utiliza insertOrIgnore() para generar "ON CONFLICT DO NOTHING"
              * y permitir la reejecución segura del seeder en PostgreSQL.
              */
@@ -175,6 +177,50 @@ class PerfilProfesionalSeeder extends Seeder
             $this->sincronizarSecuencia('certificados', 'id_certificado');
             $this->sincronizarSecuencia('solicitudes_habilitacion', 'id_solicitud');
         });
+
+        /*
+         * Los fixtures públicos solo se generan en entorno local para simular
+         * documentos heredados que BE-16 debe migrar al disco privado.
+         */
+        $this->asegurarArchivoHeredado(
+            'certificados/prueba/certificado-electricidad.pdf',
+            database_path('seeders/fixtures/certificado-electricidad.pdf')
+        );
+    }
+
+    /**
+     * Crea el archivo heredado únicamente si no existe ya en ninguno de los
+     * discos. Así, volver a ejecutar el seeder después de migrar no repone
+     * una copia pública.
+     */
+    private function asegurarArchivoHeredado(
+        string $rutaDestino,
+        string $rutaFixture
+    ): void {
+        if (! app()->environment('local')) {
+            return;
+        }
+
+        $publico = Storage::disk('public');
+        $privado = Storage::disk('local');
+
+        if ($publico->exists($rutaDestino) || $privado->exists($rutaDestino)) {
+            return;
+        }
+
+        if (! is_file($rutaFixture)) {
+            throw new RuntimeException(
+                "No se encontró el fixture requerido: {$rutaFixture}"
+            );
+        }
+
+        $contenido = file_get_contents($rutaFixture);
+
+        if ($contenido === false || ! $publico->put($rutaDestino, $contenido)) {
+            throw new RuntimeException(
+                "No fue posible crear el archivo de prueba: {$rutaDestino}"
+            );
+        }
     }
 
     /**

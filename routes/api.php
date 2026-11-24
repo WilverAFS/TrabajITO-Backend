@@ -51,6 +51,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/publicaciones/trabajador/{id_trabajador}', [PublicacionController::class, 'publicacionesPorTrabajador'])
         ->whereNumber('id_trabajador');
 
+    // Archivo de evidencia: público solo cuando la publicación está visible.
+    Route::get('/evidencias/{id_evidencia}/archivo', [EvidenciaController::class, 'archivo'])
+    ->whereNumber('id_evidencia')
+    ->name('api.v1.evidencias.archivo');
+
     // Rutas protegidas: requieren autenticación y una cuenta activa.
     Route::middleware(['auth:sanctum', 'cuenta.activa'])->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
@@ -78,6 +83,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/me/perfil/certificados', [CertificadoController::class, 'store']);
         Route::delete('/me/perfil/certificados/{id_certificado}', [CertificadoController::class, 'destroy'])
             ->whereNumber('id_certificado');
+        Route::get('/certificados/{id_certificado}/documento', [CertificadoController::class, 'documento'])
+            ->whereNumber('id_certificado')
+            ->name('api.v1.certificados.documento');
 
         // Solicitudes propias de habilitación.
         Route::post('/me/perfil/solicitudes-habilitacion', [SolicitudHabilitacionController::class, 'store']);

@@ -20,7 +20,7 @@ class CertificadoApiTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake('public');
+        Storage::fake('local');
     }
 
     private function crearUsuario(): User
@@ -62,7 +62,7 @@ class CertificadoApiTest extends TestCase
         return $perfil->certificados()->create(
             array_merge([
                 'nombre' => 'Certificado de electricidad',
-                'institucion_emisora' => 'Institución de prueba',
+                'institucion_emisora' => 'InstituciÃ³n de prueba',
                 'fecha_emision' => '2025-05-15',
                 'fecha_vencimiento' => null,
                 'ruta_documento' => 'certificados/prueba.pdf',
@@ -137,7 +137,7 @@ class CertificadoApiTest extends TestCase
             ]);
     }
 
-    // 2. Todas las operaciones requieren autenticación.
+    // 2. Todas las operaciones requieren autenticaciÃ³n.
     public function test_certificados_requieren_autenticacion(): void
     {
         $this->getJson('/api/v1/me/perfil/certificados')
@@ -166,7 +166,7 @@ class CertificadoApiTest extends TestCase
 
         $this->enviarRegistro($token, [
             'nombre' => 'Certificado de prueba',
-            'institucion_emisora' => 'Institución de prueba',
+            'institucion_emisora' => 'InstituciÃ³n de prueba',
             'fecha_emision' => '2025-05-15',
             'documento' => UploadedFile::fake()->create(
                 'certificado.pdf',
@@ -189,7 +189,7 @@ class CertificadoApiTest extends TestCase
 
         $this->assertDatabaseCount('certificados', 0);
 
-        Storage::disk('public')
+        Storage::disk('local')
             ->assertDirectoryEmpty('certificados');
     }
 
@@ -202,8 +202,8 @@ class CertificadoApiTest extends TestCase
         $token = $this->crearToken($usuario);
 
         $respuesta = $this->enviarRegistro($token, [
-            'nombre' => 'Instalaciones eléctricas residenciales',
-            'institucion_emisora' => 'Institución de capacitación',
+            'nombre' => 'Instalaciones elÃ©ctricas residenciales',
+            'institucion_emisora' => 'InstituciÃ³n de capacitaciÃ³n',
             'fecha_emision' => '2025-05-15',
             'fecha_vencimiento' => null,
             'documento' => UploadedFile::fake()->create(
@@ -221,11 +221,11 @@ class CertificadoApiTest extends TestCase
             )
             ->assertJsonPath(
                 'data.nombre',
-                'Instalaciones eléctricas residenciales'
+                'Instalaciones elÃ©ctricas residenciales'
             )
             ->assertJsonPath(
                 'data.institucion_emisora',
-                'Institución de capacitación'
+                'InstituciÃ³n de capacitaciÃ³n'
             )
             ->assertJsonPath(
                 'data.fecha_emision',
@@ -250,11 +250,11 @@ class CertificadoApiTest extends TestCase
             'verificado' => false,
         ]);
 
-        Storage::disk('public')
+        Storage::disk('local')
             ->assertExists($certificado->ruta_documento);
 
-        $this->assertStringStartsWith(
-            '/storage/certificados/',
+        $this->assertStringContainsString(
+            '/api/v1/certificados/' . $certificado->id_certificado . '/documento',
             $respuesta->json('data.documento_url')
         );
 
@@ -289,7 +289,7 @@ class CertificadoApiTest extends TestCase
 
             $respuesta = $this->enviarRegistro($token, [
                 'nombre' => 'Certificado de prueba',
-                'institucion_emisora' => 'Institución de prueba',
+                'institucion_emisora' => 'InstituciÃ³n de prueba',
                 'fecha_emision' => '2025-05-15',
                 'documento' => $archivo,
             ]);
@@ -302,7 +302,7 @@ class CertificadoApiTest extends TestCase
 
         $this->assertCount(
             2,
-            Storage::disk('public')->allFiles('certificados')
+            Storage::disk('local')->allFiles('certificados')
         );
     }
 
@@ -316,7 +316,7 @@ class CertificadoApiTest extends TestCase
 
         $respuesta = $this->enviarRegistro($token, [
             'nombre' => 'Certificado de prueba',
-            'institucion_emisora' => 'Institución de prueba',
+            'institucion_emisora' => 'InstituciÃ³n de prueba',
             'fecha_emision' => '2025-05-15',
             'documento' => UploadedFile::fake()->create(
                 'certificado.txt',
@@ -330,7 +330,7 @@ class CertificadoApiTest extends TestCase
 
         $this->assertDatabaseCount('certificados', 0);
 
-        Storage::disk('public')
+        Storage::disk('local')
             ->assertDirectoryEmpty('certificados');
     }
 
@@ -344,7 +344,7 @@ class CertificadoApiTest extends TestCase
 
         $respuesta = $this->enviarRegistro($token, [
             'nombre' => 'Certificado de prueba',
-            'institucion_emisora' => 'Institución de prueba',
+            'institucion_emisora' => 'InstituciÃ³n de prueba',
             'fecha_emision' => '2025-05-15',
             'documento' => UploadedFile::fake()->create(
                 'certificado.pdf',
@@ -385,7 +385,7 @@ class CertificadoApiTest extends TestCase
         $this->assertDatabaseCount('certificados', 0);
     }
 
-    // 9. Rechazar fechas de emisión con formato incorrecto.
+    // 9. Rechazar fechas de emisiÃ³n con formato incorrecto.
     public function test_rechazar_formato_de_fecha_emision_invalido(): void
     {
         $usuario = $this->crearUsuario();
@@ -395,7 +395,7 @@ class CertificadoApiTest extends TestCase
 
         $respuesta = $this->enviarRegistro($token, [
             'nombre' => 'Certificado de prueba',
-            'institucion_emisora' => 'Institución de prueba',
+            'institucion_emisora' => 'InstituciÃ³n de prueba',
             'fecha_emision' => '15-05-2025',
             'documento' => UploadedFile::fake()->create(
                 'certificado.pdf',
@@ -410,7 +410,7 @@ class CertificadoApiTest extends TestCase
         $this->assertDatabaseCount('certificados', 0);
     }
 
-    // 10. Rechazar vencimientos anteriores a la fecha de emisión.
+    // 10. Rechazar vencimientos anteriores a la fecha de emisiÃ³n.
     public function test_rechazar_fecha_vencimiento_anterior_a_emision(): void
     {
         $usuario = $this->crearUsuario();
@@ -420,7 +420,7 @@ class CertificadoApiTest extends TestCase
 
         $respuesta = $this->enviarRegistro($token, [
             'nombre' => 'Certificado de prueba',
-            'institucion_emisora' => 'Institución de prueba',
+            'institucion_emisora' => 'InstituciÃ³n de prueba',
             'fecha_emision' => '2025-05-15',
             'fecha_vencimiento' => '2025-04-15',
             'documento' => UploadedFile::fake()->create(
@@ -436,7 +436,7 @@ class CertificadoApiTest extends TestCase
         $this->assertDatabaseCount('certificados', 0);
     }
 
-    // 11. Impedir que el cliente envíe o modifique verificado.
+    // 11. Impedir que el cliente envÃ­e o modifique verificado.
     public function test_impedir_modificar_estado_verificado(): void
     {
         $usuario = $this->crearUsuario();
@@ -446,7 +446,7 @@ class CertificadoApiTest extends TestCase
 
         $respuesta = $this->enviarRegistro($token, [
             'nombre' => 'Certificado de prueba',
-            'institucion_emisora' => 'Institución de prueba',
+            'institucion_emisora' => 'InstituciÃ³n de prueba',
             'fecha_emision' => '2025-05-15',
             'verificado' => true,
             'documento' => UploadedFile::fake()->create(
@@ -461,7 +461,7 @@ class CertificadoApiTest extends TestCase
 
         $this->assertDatabaseCount('certificados', 0);
 
-        Storage::disk('public')
+        Storage::disk('local')
             ->assertDirectoryEmpty('certificados');
     }
 
@@ -473,7 +473,7 @@ class CertificadoApiTest extends TestCase
 
         $ruta = 'certificados/certificado-prueba.pdf';
 
-        Storage::disk('public')->put(
+        Storage::disk('local')->put(
             $ruta,
             'Contenido de prueba'
         );
@@ -496,7 +496,7 @@ class CertificadoApiTest extends TestCase
             'id_certificado' => $certificado->id_certificado,
         ]);
 
-        Storage::disk('public')->assertMissing($ruta);
+        Storage::disk('local')->assertMissing($ruta);
     }
 
     // 13. Impedir eliminar certificados de otros trabajadores.
@@ -510,7 +510,7 @@ class CertificadoApiTest extends TestCase
 
         $ruta = 'certificados/certificado-ajeno.pdf';
 
-        Storage::disk('public')->put(
+        Storage::disk('local')->put(
             $ruta,
             'Contenido de prueba'
         );
@@ -541,10 +541,10 @@ class CertificadoApiTest extends TestCase
             'id_certificado' => $certificadoAjeno->id_certificado,
         ]);
 
-        Storage::disk('public')->assertExists($ruta);
+        Storage::disk('local')->assertExists($ruta);
     }
 
-    // 14. Rechazar la eliminación de certificados inexistentes.
+    // 14. Rechazar la eliminaciÃ³n de certificados inexistentes.
     public function test_eliminar_certificado_inexistente(): void
     {
         $usuario = $this->crearUsuario();

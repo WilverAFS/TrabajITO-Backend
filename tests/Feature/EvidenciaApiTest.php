@@ -34,7 +34,7 @@ class EvidenciaApiTest extends TestCase
     {
         parent::setUp();
 
-        Storage::fake('public');
+        Storage::fake('local');
 
         $this->crearCatalogos();
 
@@ -52,7 +52,7 @@ class EvidenciaApiTest extends TestCase
         $tipo =
             TipoPublicacion::create([
                 'tipo_publicacion' =>
-                'Reparación',
+                'ReparaciÃ³n',
             ]);
 
         $this->contratacion =
@@ -92,7 +92,7 @@ class EvidenciaApiTest extends TestCase
                 'Trabajo realizado',
 
                 'descripcion' =>
-                'Descripción suficientemente extensa para cumplir validaciones.',
+                'DescripciÃ³n suficientemente extensa para cumplir validaciones.',
 
                 'visible' => true,
 
