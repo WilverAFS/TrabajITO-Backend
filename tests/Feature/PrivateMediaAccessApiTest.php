@@ -142,7 +142,7 @@ class PrivateMediaAccessApiTest extends TestCase
             'CONTENIDO-CERTIFICADO-PRIVADO'
         );
 
-        $this->get(
+        $this->getJson(
             "/api/v1/certificados/{$certificado->id_certificado}/documento"
         )->assertUnauthorized()
             ->assertJsonPath('error_code', 'UNAUTHENTICATED');

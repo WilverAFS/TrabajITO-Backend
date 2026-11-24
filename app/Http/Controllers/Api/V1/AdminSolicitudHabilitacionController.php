@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\AdminSolicitudHabilitacionResource;
+use App\Http\Resources\Api\V1\CertificadoResource;
 use App\Models\PerfilProfesional;
 use App\Models\SolicitudHabilitacion;
 use Illuminate\Http\JsonResponse;
@@ -100,11 +101,19 @@ class AdminSolicitudHabilitacionController extends Controller
             );
         }
 
+        $datos = (new AdminSolicitudHabilitacionResource($solicitud))
+            ->resolve($request);
+
+        if ($solicitud->perfilProfesional) {
+            $datos['perfil']['certificados'] = CertificadoResource::collection(
+                $solicitud->perfilProfesional->certificados
+            )->resolve($request);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Solicitud de habilitación obtenida correctamente.',
-            'data' => (new AdminSolicitudHabilitacionResource($solicitud))
-                ->resolve($request),
+            'data' => $datos,
         ]);
     }
 
