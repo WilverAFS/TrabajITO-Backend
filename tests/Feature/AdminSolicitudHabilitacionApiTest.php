@@ -541,6 +541,10 @@ class AdminSolicitudHabilitacionApiTest extends TestCase
     {
         $this->autenticarAdministrador();
 
+        $this->getJson(self::URL . '?id_estado=32768')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['id_estado']);
+
         $this->getJson(self::URL . '?id_estado=999999')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['id_estado']);
@@ -552,5 +556,14 @@ class AdminSolicitudHabilitacionApiTest extends TestCase
         $this->getJson(self::URL . '?direction=invalida')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['direction']);
+    }
+
+    public function test_estado_valido_sin_solicitudes_devuelve_lista_vacia(): void
+    {
+        $this->autenticarAdministrador();
+
+        $this->getJson(self::URL . '?id_estado=4')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
     }
 }

@@ -112,8 +112,10 @@ class ContratacionController extends Controller
             ],
             'id_estado' => [
                 'sometimes',
+                'bail',
                 'integer',
                 'min:1',
+                'max:32767',
                 'exists:estados_contratacion,id_estado_contratacion',
             ],
             'page' => [

@@ -480,4 +480,26 @@ class ContratacionApiTest extends TestCase
             )
             ->assertUnprocessable();
     }
+
+    public function test_filtro_estado_fuera_del_rango_y_estado_sin_resultados(): void
+    {
+        $usuario = $this->crearUsuario();
+        $token = $this->token($usuario);
+
+        $this->withToken($token)
+            ->getJson(self::URL . '?id_estado=32768')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['id_estado']);
+
+        $this->withToken($token)
+            ->getJson(self::URL . '?id_estado=999999')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['id_estado']);
+
+        $this->withToken($token)
+            ->getJson(self::URL . '?id_estado=6')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 0)
+            ->assertJsonCount(0, 'data');
+    }
 }

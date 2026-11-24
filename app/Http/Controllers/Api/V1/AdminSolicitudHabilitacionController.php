@@ -29,8 +29,10 @@ class AdminSolicitudHabilitacionController extends Controller
         $filtros = $request->validate([
             'id_estado' => [
                 'sometimes',
+                'bail',
                 'integer',
                 'min:1',
+                'max:32767',
                 'exists:estados_solicitud,id_estado_solicitud',
             ],
             'page' => ['sometimes', 'integer', 'min:1'],

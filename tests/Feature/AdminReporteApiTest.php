@@ -502,4 +502,25 @@ class AdminReporteApiTest extends TestCase
                 'resolucion',
             ]);
     }
+
+    public function test_filtro_estado_fuera_del_rango_y_estado_sin_resultados(): void
+    {
+        $admin = $this->crearUsuario(administrador: true);
+        $token = $this->token($admin);
+
+        $this->withToken($token)
+            ->getJson(self::BASE_URL . '?id_estado=32768')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['id_estado']);
+
+        $this->withToken($token)
+            ->getJson(self::BASE_URL . '?id_estado=999999')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['id_estado']);
+
+        $this->withToken($token)
+            ->getJson(self::BASE_URL . '?id_estado=3')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+    }
 }
