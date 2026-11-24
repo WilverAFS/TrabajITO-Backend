@@ -170,7 +170,9 @@ class AdminUsuarioApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.id_usuario', $trabajador->id_usuario)
             ->assertJsonPath('data.activo', false)
-            ->assertJsonMissingPath('data.perfil_profesional');
+            ->assertJsonPath('data.perfil_profesional.id_trabajador', $perfil->id_trabajador)
+            ->assertJsonPath('data.perfil_profesional.activo', false)
+            ->assertJsonPath('data.perfil_profesional.requiere_nueva_habilitacion', false);
 
         $this->assertDatabaseHas('users', [
             'id_usuario' => $trabajador->id_usuario,
@@ -264,7 +266,9 @@ class AdminUsuarioApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.id_usuario', $trabajador->id_usuario)
             ->assertJsonPath('data.activo', true)
-            ->assertJsonMissingPath('data.perfil_profesional');
+            ->assertJsonPath('data.perfil_profesional.id_trabajador', $perfil->id_trabajador)
+            ->assertJsonPath('data.perfil_profesional.activo', false)
+            ->assertJsonPath('data.perfil_profesional.requiere_nueva_habilitacion', true);
 
         $this->assertDatabaseHas('users', [
             'id_usuario' => $trabajador->id_usuario,
@@ -274,6 +278,89 @@ class AdminUsuarioApiTest extends TestCase
             'id_trabajador' => $perfil->id_trabajador,
             'activo' => false,
         ]);
+    }
+
+    public function test_reactivar_cuenta_requiere_nueva_habilitacion_antes_de_volver_a_publicarse(): void
+    {
+        $trabajador = $this->crearUsuario('ciclo-reactivacion@test.com');
+        $perfil = $this->crearPerfil($trabajador, true);
+        $this->crearSolicitudAceptada($perfil);
+
+        $tokenAnterior = $this->token($trabajador);
+        $tokenAdministrador = $this->token($this->administrador);
+
+        // Suspender revoca las sesiones existentes y deshabilita el perfil.
+        $this->withToken($tokenAdministrador)
+            ->patchJson("/api/v1/admin/usuarios/{$trabajador->id_usuario}/suspender")
+            ->assertOk()
+            ->assertJsonPath('data.activo', false)
+            ->assertJsonPath('data.perfil_profesional.activo', false);
+
+        // Reactivar la cuenta no debe reactivar automáticamente el perfil.
+        $this->withToken($tokenAdministrador)
+            ->patchJson("/api/v1/admin/usuarios/{$trabajador->id_usuario}/reactivar")
+            ->assertOk()
+            ->assertJsonPath('data.activo', true)
+            ->assertJsonPath('data.perfil_profesional.activo', false)
+            ->assertJsonPath('data.perfil_profesional.requiere_nueva_habilitacion', true);
+
+        $this->assertDatabaseHas('users', [
+            'id_usuario' => $trabajador->id_usuario,
+            'activo' => true,
+        ]);
+        $this->assertDatabaseHas('perfiles_profesionales', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'activo' => false,
+        ]);
+
+        // El token previo a la suspensión continúa revocado tras reactivar.
+        $this->app['auth']->forgetGuards();
+        $this->withToken($tokenAnterior)
+            ->getJson('/api/v1/me')
+            ->assertUnauthorized();
+
+        // El usuario puede iniciar una sesión nueva con sus credenciales.
+        $login = $this->postJson('/api/v1/auth/login', [
+            'correo' => $trabajador->correo,
+            'password' => 'Prueba123!',
+            'device_name' => 'Nueva sesión después de reactivación',
+        ])->assertOk();
+
+        $nuevoToken = $login->json('data.token');
+        $this->assertNotEmpty($nuevoToken);
+
+        // La cuenta ya está activa, pero el perfil aún no aparece públicamente.
+        $this->getJson('/api/v1/trabajadores')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 0);
+
+        // El trabajador solicita nuevamente la habilitación.
+        $solicitud = $this->withToken($nuevoToken)
+            ->postJson('/api/v1/me/perfil/solicitudes-habilitacion', [])
+            ->assertCreated()
+            ->json('data.id_solicitud');
+
+        $this->assertNotEmpty($solicitud);
+
+        // Solo la aprobación administrativa vuelve a habilitar el perfil.
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($tokenAdministrador)
+            ->patchJson(
+                "/api/v1/admin/solicitudes-habilitacion/{$solicitud}/aprobar",
+                []
+            )
+            ->assertOk();
+
+        $this->assertDatabaseHas('perfiles_profesionales', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'activo' => true,
+        ]);
+
+        $this->getJson('/api/v1/trabajadores')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.id_trabajador', $perfil->id_trabajador);
     }
 
     public function test_suspender_usuario_inexistente_devuelve_resource_not_found(): void

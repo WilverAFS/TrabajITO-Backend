@@ -23,9 +23,20 @@ class UsuarioResource extends JsonResource
     public function toArray(Request $request): array
     {
         if ($this->soloEstado) {
+            $perfil = $this->resource->relationLoaded('perfilProfesional')
+                ? $this->resource->perfilProfesional
+                : null;
+
             return [
                 'id_usuario' => $this->id_usuario,
                 'activo' => (bool) $this->activo,
+                'perfil_profesional' => $perfil ? [
+                    'id_trabajador' => $perfil->id_trabajador,
+                    'activo' => (bool) $perfil->activo,
+                    'requiere_nueva_habilitacion' => (bool) (
+                        $this->activo && ! $perfil->activo
+                    ),
+                ] : null,
             ];
         }
 

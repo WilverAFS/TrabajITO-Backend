@@ -183,7 +183,9 @@ class AdminUsuarioController extends Controller
         Request $request,
         int $id_usuario
     ): JsonResponse {
-        $usuario = User::query()->find($id_usuario);
+        $usuario = User::query()
+            ->with('perfilProfesional')
+            ->find($id_usuario);
 
         if (! $usuario) {
             return $this->error(
@@ -197,9 +199,13 @@ class AdminUsuarioController extends Controller
         $usuario->save();
         $usuario->refresh();
 
+        $mensaje = $usuario->perfilProfesional && ! $usuario->perfilProfesional->activo
+            ? 'Cuenta reactivada. El perfil profesional permanece inactivo y requiere una nueva solicitud de habilitación.'
+            : 'Usuario reactivado correctamente.';
+
         return response()->json([
             'success' => true,
-            'message' => 'Usuario reactivado correctamente.',
+            'message' => $mensaje,
             'data' => (new UsuarioResource($usuario, false, true))
                 ->resolve($request),
         ]);
