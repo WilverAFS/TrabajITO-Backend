@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\ContratacionController;
 use App\Http\Controllers\Api\V1\ContratacionTransicionController;
 use App\Http\Controllers\Api\V1\DisponibilidadController;
 use App\Http\Controllers\Api\V1\EvidenciaController;
+use App\Http\Controllers\Api\V1\FotoPerfilController;
 use App\Http\Controllers\Api\V1\NotificacionController;
 use App\Http\Controllers\Api\V1\PerfilProfesionalController;
 use App\Http\Controllers\Api\V1\PublicacionController;
@@ -57,10 +58,17 @@ Route::prefix('v1')->group(function () {
     ->name('api.v1.evidencias.archivo');
 
     // Rutas protegidas: requieren autenticación y una cuenta activa.
+// Fotografía de cuenta: pública solo para trabajadores activos; privada para titular y administración.
+    Route::get('/usuarios/{id_usuario}/foto', [FotoPerfilController::class, 'show'])
+        ->whereNumber('id_usuario')
+        ->name('api.v1.usuarios.foto');
+
     Route::middleware(['auth:sanctum', 'cuenta.activa'])->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::patch('/me', [AccountController::class, 'update']);
         Route::patch('/me/password', [AccountController::class, 'changePassword']);
+        Route::post('/me/foto-perfil', [FotoPerfilController::class, 'store']);
+        Route::delete('/me/foto-perfil', [FotoPerfilController::class, 'destroy']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/tipos-publicacion', [CatalogoController::class, 'tiposPublicacion']);
 

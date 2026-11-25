@@ -66,6 +66,7 @@ class UsuarioResource extends JsonResource
             'nombre_completo' => trim("{$this->nombre} {$this->apellido}"),
             'correo' => $this->correo,
             'telefono' => $this->telefono,
+            'foto_url' => $this->foto_perfil ? route('api.v1.usuarios.foto', ['id_usuario' => $this->id_usuario]) : null,
             'es_administrador' => (bool) $this->es_administrador,
             'activo' => (bool) $this->activo,
             'fecha_registro' => $this->fecha_registro?->toIso8601String(),
