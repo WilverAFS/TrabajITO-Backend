@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\ContratacionController;
 use App\Http\Controllers\Api\V1\ContratacionTransicionController;
 use App\Http\Controllers\Api\V1\DisponibilidadController;
 use App\Http\Controllers\Api\V1\EvidenciaController;
+use App\Http\Controllers\Api\V1\FotoPerfilController;
 use App\Http\Controllers\Api\V1\NotificacionController;
 use App\Http\Controllers\Api\V1\PerfilProfesionalController;
 use App\Http\Controllers\Api\V1\PublicacionController;
@@ -51,11 +52,23 @@ Route::prefix('v1')->group(function () {
     Route::get('/publicaciones/trabajador/{id_trabajador}', [PublicacionController::class, 'publicacionesPorTrabajador'])
         ->whereNumber('id_trabajador');
 
-    // Rutas protegidas.
-    Route::middleware('auth:sanctum')->group(function () {
+    // Archivo de evidencia: público solo cuando la publicación está visible.
+    Route::get('/evidencias/{id_evidencia}/archivo', [EvidenciaController::class, 'archivo'])
+    ->whereNumber('id_evidencia')
+    ->name('api.v1.evidencias.archivo');
+
+    // Rutas protegidas: requieren autenticación y una cuenta activa.
+// Fotografía de cuenta: pública solo para trabajadores activos; privada para titular y administración.
+    Route::get('/usuarios/{id_usuario}/foto', [FotoPerfilController::class, 'show'])
+        ->whereNumber('id_usuario')
+        ->name('api.v1.usuarios.foto');
+
+    Route::middleware(['auth:sanctum', 'cuenta.activa'])->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::patch('/me', [AccountController::class, 'update']);
         Route::patch('/me/password', [AccountController::class, 'changePassword']);
+        Route::post('/me/foto-perfil', [FotoPerfilController::class, 'store']);
+        Route::delete('/me/foto-perfil', [FotoPerfilController::class, 'destroy']);
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::get('/tipos-publicacion', [CatalogoController::class, 'tiposPublicacion']);
 
@@ -78,6 +91,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/me/perfil/certificados', [CertificadoController::class, 'store']);
         Route::delete('/me/perfil/certificados/{id_certificado}', [CertificadoController::class, 'destroy'])
             ->whereNumber('id_certificado');
+        Route::get('/certificados/{id_certificado}/documento', [CertificadoController::class, 'documento'])
+            ->whereNumber('id_certificado')
+            ->name('api.v1.certificados.documento');
 
         // Solicitudes propias de habilitación.
         Route::post('/me/perfil/solicitudes-habilitacion', [SolicitudHabilitacionController::class, 'store']);
@@ -113,8 +129,7 @@ Route::prefix('v1')->group(function () {
             ->whereNumber('id_evidencia');
 
         // Valoraciones.
-        Route::post('/publicaciones/{id_publicacion}/valoracion', [ValoracionController::class, 'store'])
-            ->whereNumber('id_publicacion');
+        Route::post('/publicaciones/{id_publicacion}/valoracion', [ValoracionController::class, 'store']);
         Route::patch('/valoraciones/{id_valoracion}', [ValoracionController::class, 'update'])
             ->whereNumber('id_valoracion');
 

@@ -19,6 +19,7 @@ use Laravel\Sanctum\HasApiTokens;
     'correo',
     'contrasena_hash',
     'telefono',
+    'foto_perfil',
 ])]
 #[Hidden([
     'contrasena_hash',

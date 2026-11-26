@@ -210,6 +210,15 @@ class AdminSolicitudHabilitacionApiTest extends TestCase
         $perfil = $this->crearPerfil($trabajador);
         $solicitud = $this->crearSolicitud($perfil);
 
+        $certificado = $perfil->certificados()->create([
+            'nombre' => 'Certificado de electricidad',
+            'institucion_emisora' => 'Instituto de capacitación',
+            'fecha_emision' => '2025-05-15',
+            'fecha_vencimiento' => '2027-05-15',
+            'ruta_documento' => 'certificados/solicitud-prueba.pdf',
+        ]);
+        $certificado->forceFill(['verificado' => true])->save();
+
         $this->autenticarAdministrador();
 
         $this->getJson(
@@ -232,6 +241,40 @@ class AdminSolicitudHabilitacionApiTest extends TestCase
             ->assertJsonPath(
                 'data.estado.estado_solicitud',
                 'Pendiente'
+            )
+            ->assertJsonCount(1, 'data.perfil.certificados')
+            ->assertJsonPath(
+                'data.perfil.certificados.0.id_certificado',
+                $certificado->id_certificado
+            )
+            ->assertJsonPath(
+                'data.perfil.certificados.0.nombre',
+                'Certificado de electricidad'
+            )
+            ->assertJsonPath(
+                'data.perfil.certificados.0.institucion_emisora',
+                'Instituto de capacitación'
+            )
+            ->assertJsonPath(
+                'data.perfil.certificados.0.fecha_emision',
+                '2025-05-15'
+            )
+            ->assertJsonPath(
+                'data.perfil.certificados.0.fecha_vencimiento',
+                '2027-05-15'
+            )
+            ->assertJsonPath(
+                'data.perfil.certificados.0.verificado',
+                true
+            )
+            ->assertJsonPath(
+                'data.perfil.certificados.0.documento_url',
+                route('api.v1.certificados.documento', [
+                    'id_certificado' => $certificado->id_certificado,
+                ])
+            )
+            ->assertJsonMissingPath(
+                'data.perfil.certificados.0.ruta_documento'
             )
             ->assertJsonStructure([
                 'data' => [
@@ -498,6 +541,10 @@ class AdminSolicitudHabilitacionApiTest extends TestCase
     {
         $this->autenticarAdministrador();
 
+        $this->getJson(self::URL . '?id_estado=32768')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['id_estado']);
+
         $this->getJson(self::URL . '?id_estado=999999')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['id_estado']);
@@ -509,5 +556,14 @@ class AdminSolicitudHabilitacionApiTest extends TestCase
         $this->getJson(self::URL . '?direction=invalida')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['direction']);
+    }
+
+    public function test_estado_valido_sin_solicitudes_devuelve_lista_vacia(): void
+    {
+        $this->autenticarAdministrador();
+
+        $this->getJson(self::URL . '?id_estado=4')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
     }
 }

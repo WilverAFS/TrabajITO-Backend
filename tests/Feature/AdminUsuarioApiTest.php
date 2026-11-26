@@ -170,7 +170,9 @@ class AdminUsuarioApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.id_usuario', $trabajador->id_usuario)
             ->assertJsonPath('data.activo', false)
-            ->assertJsonMissingPath('data.perfil_profesional');
+            ->assertJsonPath('data.perfil_profesional.id_trabajador', $perfil->id_trabajador)
+            ->assertJsonPath('data.perfil_profesional.activo', false)
+            ->assertJsonPath('data.perfil_profesional.requiere_nueva_habilitacion', false);
 
         $this->assertDatabaseHas('users', [
             'id_usuario' => $trabajador->id_usuario,
@@ -180,6 +182,78 @@ class AdminUsuarioApiTest extends TestCase
             'id_trabajador' => $perfil->id_trabajador,
             'activo' => false,
         ]);
+    }
+
+    public function test_suspension_revoca_todos_los_tokens_y_bloquea_lectura_y_escritura(): void
+    {
+        $trabajador = $this->crearUsuario('sesiones-suspender@test.com');
+
+        $tokenSesionA = $trabajador->createToken('Sesion A')->plainTextToken;
+        $tokenSesionB = $trabajador->createToken('Sesion B')->plainTextToken;
+        $tokenAdministrador = $this->token($this->administrador);
+
+        $this->withToken($tokenAdministrador)
+            ->patchJson("/api/v1/admin/usuarios/{$trabajador->id_usuario}/suspender")
+            ->assertOk()
+            ->assertJsonPath('data.activo', false);
+
+        // Solo debe permanecer el token del administrador que ejecutó la suspensión.
+        $this->assertDatabaseCount('personal_access_tokens', 1);
+
+        $this->assertDatabaseMissing('personal_access_tokens', [
+            'tokenable_type' => User::class,
+            'tokenable_id' => $trabajador->id_usuario,
+        ]);
+
+        // Una sesión anterior no debe poder consultar su cuenta.
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($tokenSesionA)
+            ->getJson('/api/v1/me')
+            ->assertUnauthorized()
+            ->assertJsonPath('error_code', 'UNAUTHENTICATED');
+
+        // Otra sesión anterior tampoco debe consultar contrataciones.
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($tokenSesionB)
+            ->getJson('/api/v1/contrataciones')
+            ->assertUnauthorized()
+            ->assertJsonPath('error_code', 'UNAUTHENTICATED');
+
+        // La sesión revocada tampoco puede modificar la cuenta.
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($tokenSesionA)
+            ->patchJson('/api/v1/me', [
+                'nombre' => 'Cambio no autorizado',
+            ])
+            ->assertUnauthorized()
+            ->assertJsonPath('error_code', 'UNAUTHENTICATED');
+
+        $this->assertDatabaseHas('users', [
+            'id_usuario' => $trabajador->id_usuario,
+            'nombre' => 'Usuario',
+            'activo' => false,
+        ]);
+    }
+
+    public function test_middleware_bloquea_cuentas_inactivas_con_token_existente(): void
+    {
+        $usuario = $this->crearUsuario('middleware-inactivo@test.com');
+        $token = $this->token($usuario);
+
+        // Simula una cuenta inactiva cuyo token aún existe por una modificación externa.
+        $usuario->activo = false;
+        $usuario->save();
+
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($token)
+            ->getJson('/api/v1/me')
+            ->assertForbidden()
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('error_code', 'ACCOUNT_INACTIVE');
     }
 
     public function test_reactivar_usuario_no_reactiva_su_perfil_profesional(): void
@@ -192,7 +266,9 @@ class AdminUsuarioApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.id_usuario', $trabajador->id_usuario)
             ->assertJsonPath('data.activo', true)
-            ->assertJsonMissingPath('data.perfil_profesional');
+            ->assertJsonPath('data.perfil_profesional.id_trabajador', $perfil->id_trabajador)
+            ->assertJsonPath('data.perfil_profesional.activo', false)
+            ->assertJsonPath('data.perfil_profesional.requiere_nueva_habilitacion', true);
 
         $this->assertDatabaseHas('users', [
             'id_usuario' => $trabajador->id_usuario,
@@ -202,6 +278,89 @@ class AdminUsuarioApiTest extends TestCase
             'id_trabajador' => $perfil->id_trabajador,
             'activo' => false,
         ]);
+    }
+
+    public function test_reactivar_cuenta_requiere_nueva_habilitacion_antes_de_volver_a_publicarse(): void
+    {
+        $trabajador = $this->crearUsuario('ciclo-reactivacion@test.com');
+        $perfil = $this->crearPerfil($trabajador, true);
+        $this->crearSolicitudAceptada($perfil);
+
+        $tokenAnterior = $this->token($trabajador);
+        $tokenAdministrador = $this->token($this->administrador);
+
+        // Suspender revoca las sesiones existentes y deshabilita el perfil.
+        $this->withToken($tokenAdministrador)
+            ->patchJson("/api/v1/admin/usuarios/{$trabajador->id_usuario}/suspender")
+            ->assertOk()
+            ->assertJsonPath('data.activo', false)
+            ->assertJsonPath('data.perfil_profesional.activo', false);
+
+        // Reactivar la cuenta no debe reactivar automáticamente el perfil.
+        $this->withToken($tokenAdministrador)
+            ->patchJson("/api/v1/admin/usuarios/{$trabajador->id_usuario}/reactivar")
+            ->assertOk()
+            ->assertJsonPath('data.activo', true)
+            ->assertJsonPath('data.perfil_profesional.activo', false)
+            ->assertJsonPath('data.perfil_profesional.requiere_nueva_habilitacion', true);
+
+        $this->assertDatabaseHas('users', [
+            'id_usuario' => $trabajador->id_usuario,
+            'activo' => true,
+        ]);
+        $this->assertDatabaseHas('perfiles_profesionales', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'activo' => false,
+        ]);
+
+        // El token previo a la suspensión continúa revocado tras reactivar.
+        $this->app['auth']->forgetGuards();
+        $this->withToken($tokenAnterior)
+            ->getJson('/api/v1/me')
+            ->assertUnauthorized();
+
+        // El usuario puede iniciar una sesión nueva con sus credenciales.
+        $login = $this->postJson('/api/v1/auth/login', [
+            'correo' => $trabajador->correo,
+            'password' => 'Prueba123!',
+            'device_name' => 'Nueva sesión después de reactivación',
+        ])->assertOk();
+
+        $nuevoToken = $login->json('data.token');
+        $this->assertNotEmpty($nuevoToken);
+
+        // La cuenta ya está activa, pero el perfil aún no aparece públicamente.
+        $this->getJson('/api/v1/trabajadores')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 0);
+
+        // El trabajador solicita nuevamente la habilitación.
+        $solicitud = $this->withToken($nuevoToken)
+            ->postJson('/api/v1/me/perfil/solicitudes-habilitacion', [])
+            ->assertCreated()
+            ->json('data.id_solicitud');
+
+        $this->assertNotEmpty($solicitud);
+
+        // Solo la aprobación administrativa vuelve a habilitar el perfil.
+        $this->app['auth']->forgetGuards();
+
+        $this->withToken($tokenAdministrador)
+            ->patchJson(
+                "/api/v1/admin/solicitudes-habilitacion/{$solicitud}/aprobar",
+                []
+            )
+            ->assertOk();
+
+        $this->assertDatabaseHas('perfiles_profesionales', [
+            'id_trabajador' => $perfil->id_trabajador,
+            'activo' => true,
+        ]);
+
+        $this->getJson('/api/v1/trabajadores')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.id_trabajador', $perfil->id_trabajador);
     }
 
     public function test_suspender_usuario_inexistente_devuelve_resource_not_found(): void

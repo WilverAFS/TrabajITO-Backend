@@ -63,6 +63,7 @@ class PerfilProfesionalPublicoResource extends JsonResource
                     $usuario->nombre . ' ' . $usuario->apellido
                 ),
                 'telefono' => $usuario->telefono,
+                'foto_url' => $usuario->foto_perfil ? route('api.v1.usuarios.foto', ['id_usuario' => $usuario->id_usuario]) : null,
             ] : null,
 
             'descripcion' => $this->descripcion,

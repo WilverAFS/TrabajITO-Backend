@@ -11,19 +11,15 @@ class CertificadoResource extends JsonResource
     {
         return [
             'id_certificado' => $this->id_certificado,
-
             'nombre' => $this->nombre,
-
             'institucion_emisora' => $this->institucion_emisora,
-
             'fecha_emision' => $this->fecha_emision?->format('Y-m-d'),
-
             'fecha_vencimiento' => $this->fecha_vencimiento?->format('Y-m-d'),
-
             'documento_url' => $this->ruta_documento
-                ? '/storage/' . ltrim($this->ruta_documento, '/')
+                ? route('api.v1.certificados.documento', [
+                    'id_certificado' => $this->id_certificado,
+                ])
                 : null,
-
             'verificado' => (bool) $this->verificado,
         ];
     }
