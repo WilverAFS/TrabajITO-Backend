@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -30,7 +30,7 @@ return new class extends Migration
              */
             $table->string('tipo_archivo', 20);
 
-            //Ruta relativa, indentificados del archivo o clave utilizada por el almacenamiento.
+            // Ruta relativa, indentificados del archivo o clave utilizada por el almacenamiento.
             $table->string('ruta_archivo', 500);
 
             $table->timestamp('fecha_carga')->useCurrent();
@@ -41,20 +41,21 @@ return new class extends Migration
             );
         });
 
-        DB::statement(
-            "ALTER TABLE evidencias
-            ADD CONSTRAINT evidencias_tipo_archivo_check
-            CHECK (tipo_archivo IN ('IMAGEN', 'VIDEO'))"
-        );
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement(
+                "ALTER TABLE evidencias
+        ADD CONSTRAINT evidencias_tipo_archivo_check
+        CHECK (tipo_archivo IN ('IMAGEN', 'VIDEO'))"
+            );
+        }
         /**
          * Las sigueintes reglas deberan validarse depues con Laravel:
-         * 
+         *
          * Maximo 10 imagnes por publicacion
          * Maximo 3 videos por publicacion
          * Imagen de hasta 10MB
          * Video de hasta 90 segundos
          * Extensiones y tipos MIME permitidos.
-         * 
          */
     }
 

@@ -1,0 +1,400 @@
+{
+	"info": {
+		"_postman_id": "ff732eac-214d-4d74-a2b9-ae62a6693140",
+		"name": "TrabajITO - Administración de Cuenta",
+		"description": "Pruebas del módulo Administración de Cuenta.\n\nPrerequisitos:\n1. Ejecutar: php artisan serve\n2. Verificar que la API esté disponible en http://127.0.0.1:8000\n3. La colección utiliza la variable baseUrl=http://127.0.0.1:8000/api/v1\n4. La solicitud '04 - Solicitar recuperación de contraseña' genera un token.\n5. Obtener el token desde storage/logs/laravel.log y copiarlo manualmente en la variable resetToken.\n6. Continuar con la solicitud '05 - Restablecer contraseña'.\n\nEndpoints cubiertos:\n- POST /auth/login\n- PATCH /me\n- PUT /me/password\n- POST /auth/forgot-password\n- POST /auth/reset-password\n- POST /auth/login (verificación posterior al reset)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "56497863"
+	},
+	"item": [
+		{
+			"name": "01 - Iniciar sesión usuario de prueba",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.test('Login exitoso', () => pm.expect(b.success).to.eql(true));",
+							"pm.test('Token generado', () => pm.expect(b.data.token).to.be.a('string').and.not.empty);",
+							"pm.collectionVariables.set('authToken', b.data.token);",
+							"pm.collectionVariables.set('idUsuario', String(b.data.usuario.id_usuario));"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"correo\": \"{{correoPrueba}}\",\n  \"password\": \"{{passwordActual}}\",\n  \"device_name\": \"Postman Administracion Cuenta\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				},
+				"description": "POST http://127.0.0.1:8000/api/v1/auth/login"
+			},
+			"response": []
+		},
+		{
+			"name": "02 - Actualizar perfil",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.test('Actualizacion exitosa', () => pm.expect(b.success).to.eql(true));",
+							"pm.test('Telefono actualizado', () => pm.expect(b.data.telefono).to.eql('9511234567'));"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"telefono\": \"9511234567\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/me",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"me"
+					]
+				},
+				"description": "PATCH http://127.0.0.1:8000/api/v1/me"
+			},
+			"response": []
+		},
+		{
+			"name": "03 - Cambiar contraseña",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.test('Cambio exitoso', () => pm.expect(b.success).to.eql(true));",
+							"pm.collectionVariables.set('passwordActual', pm.collectionVariables.get('passwordNueva'));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"password_actual\": \"{{passwordActual}}\",\n  \"password\": \"{{passwordNueva}}\",\n  \"password_confirmation\": \"{{passwordNueva}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/me/password",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"me",
+						"password"
+					]
+				},
+				"description": "PUT http://127.0.0.1:8000/api/v1/me/password"
+			},
+			"response": []
+		},
+		{
+			"name": "04 - Solicitar recuperación de contraseña",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.test('Solicitud aceptada', () => pm.expect(b.success).to.eql(true));"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"correo\": \"{{correoPrueba}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/forgot-password",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"forgot-password"
+					]
+				},
+				"description": "POST http://127.0.0.1:8000/api/v1/auth/forgot-password\n\nDespués de ejecutar esta solicitud:\n1. Revisar storage/logs/laravel.log\n2. Obtener el token generado por Laravel\n3. Guardarlo en la variable resetToken\n4. Continuar con la siguiente solicitud"
+			},
+			"response": []
+		},
+		{
+			"name": "05 - Restablecer contraseña",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.test('Restablecimiento exitoso', () => pm.expect(b.success).to.eql(true));",
+							"pm.collectionVariables.set('passwordActual', 'Reset12345!');"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"correo\": \"{{correoPrueba}}\",\n  \"token\": \"{{resetToken}}\",\n  \"password\": \"{{paswordReset}}\",\n  \"password_confirmation\": \"{{paswordReset}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/reset-password",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"reset-password"
+					]
+				},
+				"description": "POST http://127.0.0.1:8000/api/v1/auth/reset-password"
+			},
+			"response": []
+		},
+		{
+			"name": "06 - Verificar login con nueva contraseña",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+							"const b = pm.response.json();",
+							"pm.test('Login exitoso con nueva contraseña', () => pm.expect(b.success).to.eql(true));"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"correo\": \"{{correoPrueba}}\",\n  \"password\": \"{{paswordReset}}\",\n  \"device_name\": \"Verificacion Reset\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				},
+				"description": "POST http://127.0.0.1:8000/api/v1/auth/login"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://127.0.0.1:8000/api/v1"
+		},
+		{
+			"key": "authToken",
+			"value": ""
+		},
+		{
+			"key": "resetToken",
+			"value": ""
+		},
+		{
+			"key": "idUsuario",
+			"value": ""
+		},
+		{
+			"key": "correoPrueba",
+			"value": "cliente@trabajito.test"
+		},
+		{
+			"key": "passwordActual",
+			"value": "Cliente12345!"
+		},
+		{
+			"key": "passwordNueva",
+			"value": "ClienteNueva123!"
+		},
+		{
+			"key": "paswordReset",
+			"value": ""
+		}
+	]
+}

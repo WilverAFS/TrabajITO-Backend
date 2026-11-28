@@ -54,11 +54,11 @@ Route::prefix('v1')->group(function () {
 
     // Archivo de evidencia: público solo cuando la publicación está visible.
     Route::get('/evidencias/{id_evidencia}/archivo', [EvidenciaController::class, 'archivo'])
-    ->whereNumber('id_evidencia')
-    ->name('api.v1.evidencias.archivo');
+        ->whereNumber('id_evidencia')
+        ->name('api.v1.evidencias.archivo');
 
     // Rutas protegidas: requieren autenticación y una cuenta activa.
-// Fotografía de cuenta: pública solo para trabajadores activos; privada para titular y administración.
+    // Fotografía de cuenta: pública solo para trabajadores activos; privada para titular y administración.
     Route::get('/usuarios/{id_usuario}/foto', [FotoPerfilController::class, 'show'])
         ->whereNumber('id_usuario')
         ->name('api.v1.usuarios.foto');
@@ -121,8 +121,7 @@ Route::prefix('v1')->group(function () {
         Route::patch('/publicaciones/{id_publicacion}', [PublicacionController::class, 'update'])
             ->whereNumber('id_publicacion');
         Route::get('/me/perfil/publicaciones', [PublicacionController::class, 'misPublicaciones']);
-        Route::patch('/admin/publicaciones/{id_publicacion}/ocultar', [PublicacionController::class, 'ocultar'])
-            ->whereNumber('id_publicacion');
+
         Route::post('/publicaciones/{id_publicacion}/evidencias', [EvidenciaController::class, 'store'])
             ->whereNumber('id_publicacion');
         Route::delete('/evidencias/{id_evidencia}', [EvidenciaController::class, 'destroy'])
@@ -147,7 +146,12 @@ Route::prefix('v1')->group(function () {
         Route::prefix('admin')
             ->middleware('administrador')
             ->group(function () {
-                // Administración de usuarios.
+                // Administración de publicaciones.
+                Route::get('/publicaciones', [PublicacionController::class, 'indexAdmin']);
+                Route::patch('/publicaciones/{id_publicacion}/ocultar', [PublicacionController::class, 'ocultar'])
+                    ->whereNumber('id_publicacion');
+                Route::patch('/publicaciones/{id_publicacion}/mostrar', [PublicacionController::class, 'mostrar'])
+                    ->whereNumber('id_publicacion');
                 Route::get('/usuarios', [AdminUsuarioController::class, 'index']);
                 Route::get('/usuarios/{id_usuario}', [AdminUsuarioController::class, 'show'])
                     ->whereNumber('id_usuario');

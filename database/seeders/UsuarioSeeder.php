@@ -68,12 +68,14 @@ class UsuarioSeeder extends Seeder
          * Ajusta la secuencia porque insertamos identificadores
          * explícitos.
          */
-        DB::statement("
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("
             SELECT setval(
                 pg_get_serial_sequence('users', 'id_usuario'),
                 COALESCE((SELECT MAX(id_usuario) FROM users), 1),
                 true
             );
         ");
+        }
     }
 }

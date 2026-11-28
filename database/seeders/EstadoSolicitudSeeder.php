@@ -39,12 +39,14 @@ class EstadoSolicitudSeeder extends Seeder
          * Sincroniza la secuencia autoincremental de PostgreSQL
          * después de insertar identificadores explícitos.
          */
-        DB::statement("
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("
             SELECT setval(
                 pg_get_serial_sequence('estados_solicitud', 'id_estado_solicitud'),
                 COALESCE((SELECT MAX(id_estado_solicitud) FROM estados_solicitud), 1),
                 true
             );
         ");
+        }
     }
 }

@@ -16,6 +16,7 @@ class AdminUsuarioApiTest extends TestCase
     use RefreshDatabase;
 
     private User $administrador;
+
     private User $cliente;
 
     protected function setUp(): void
@@ -58,12 +59,12 @@ class AdminUsuarioApiTest extends TestCase
     {
         $sufijo = bin2hex(random_bytes(4));
         $estado = Estado::create([
-            'estado' => 'Estado ' . $sufijo,
+            'estado' => 'Estado '.$sufijo,
             'activo' => true,
         ]);
         $municipio = Municipio::create([
             'id_estado' => $estado->id_estado,
-            'municipio' => 'Municipio ' . $sufijo,
+            'municipio' => 'Municipio '.$sufijo,
             'activo' => true,
         ]);
 
@@ -115,6 +116,47 @@ class AdminUsuarioApiTest extends TestCase
             ->getJson('/api/v1/admin/usuarios')
             ->assertForbidden()
             ->assertJsonPath('error_code', 'ACCOUNT_INACTIVE');
+    }
+
+    public function test_administrador_no_puede_suspenderse_a_si_mismo(): void
+    {
+        $this->withToken($this->token($this->administrador))
+            ->patchJson(
+                "/api/v1/admin/usuarios/{$this->administrador->id_usuario}/suspender"
+            )
+            ->assertForbidden()
+            ->assertJsonPath(
+                'error_code',
+                'SELF_SUSPENSION_FORBIDDEN'
+            );
+
+        $this->assertDatabaseHas('users', [
+            'id_usuario' => $this->administrador->id_usuario,
+            'activo' => true,
+        ]);
+    }
+
+    public function test_no_se_puede_suspender_un_administrador_si_quedaria_solo_uno_activo(): void
+    {
+        $otroAdministrador = $this->crearUsuario(
+            'otro-admin@test.com',
+            true
+        );
+
+        $this->withToken($this->token($this->administrador))
+            ->patchJson(
+                "/api/v1/admin/usuarios/{$otroAdministrador->id_usuario}/suspender"
+            )
+            ->assertForbidden()
+            ->assertJsonPath(
+                'error_code',
+                'LAST_ADMIN_SUSPENSION_FORBIDDEN'
+            );
+
+        $this->assertDatabaseHas('users', [
+            'id_usuario' => $otroAdministrador->id_usuario,
+            'activo' => true,
+        ]);
     }
 
     public function test_administrador_puede_listar_y_filtrar_usuarios(): void

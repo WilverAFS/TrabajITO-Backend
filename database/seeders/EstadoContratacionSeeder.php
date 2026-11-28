@@ -47,12 +47,14 @@ class EstadoContratacionSeeder extends Seeder
          * Sincroniza la secuencia autoincremental de PostgreSQL
          * después de insertar identificadores explícitos.
          */
-        DB::statement("
-            SELECT setval(
-                pg_get_serial_sequence('estados_contratacion', 'id_estado_contratacion'),
-                COALESCE((SELECT MAX(id_estado_contratacion) FROM estados_contratacion), 1),
-                true
-            );
-        ");
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("
+        SELECT setval(
+            pg_get_serial_sequence('estados_contratacion', 'id_estado_contratacion'),
+            COALESCE((SELECT MAX(id_estado_contratacion) FROM estados_contratacion), 1),
+            true
+        );
+    ");
+        }
     }
 }
