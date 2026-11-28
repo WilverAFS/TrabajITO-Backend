@@ -14,11 +14,19 @@ class SolicitudHabilitacionController extends Controller
     // Crear solicitud de habilitación
     public function store(Request $request): JsonResponse
     {
+        if ($request->user()->es_administrador) {
+            return $this->error(
+                'Los administradores no necesitan solicitar habilitación.',
+                'ADMIN_HABILITATION_REQUEST_FORBIDDEN',
+                403
+            );
+        }
+
         $perfil = $request->user()
             ->perfilProfesional()
             ->first();
 
-        if (!$perfil) {
+        if (! $perfil) {
             return $this->error(
                 'No tienes un perfil profesional registrado.',
                 'PROFILE_NOT_FOUND',
@@ -90,7 +98,7 @@ class SolicitudHabilitacionController extends Controller
             ->perfilProfesional()
             ->first();
 
-        if (!$perfil) {
+        if (! $perfil) {
             return $this->error(
                 'No tienes un perfil profesional registrado.',
                 'PROFILE_NOT_FOUND',

@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\CrearPublicacionRequest;
 use App\Http\Resources\Api\V1\PublicacionResource;
 use App\Models\Contratacion;
 use App\Models\Publicacion;
+use App\Services\NotificacionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,84 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 class PublicacionController extends Controller
 {
+    /**
+     * GET
+     * /admin/publicaciones
+     *
+     * Listado administrativo de publicaciones.
+     */
+    public function indexAdmin(Request $request): JsonResponse
+    {
+        // Contar todas las publicaciones ocultas.
+        $totalOcultas = Publicacion::query()
+            ->where('visible', false)
+            ->count();
+
+        // Consulta principal.
+        $query = Publicacion::query()
+            ->with([
+                'tipoPublicacion',
+                'contratacion.trabajador.usuario',
+                'evidencias',
+                'valoracion',
+            ]);
+
+        // Filtrar por visibilidad.
+        if ($request->has('visible')) {
+            $visible = filter_var(
+                $request->query('visible'),
+                FILTER_VALIDATE_BOOLEAN,
+                FILTER_NULL_ON_FAILURE
+            );
+
+            if ($visible === null) {
+                return $this->error(
+                    'El filtro visible debe ser true o false.',
+                    'INVALID_VISIBILITY_FILTER',
+                    422
+                );
+            }
+
+            $query->where('visible', $visible);
+        }
+
+        // Buscar por título o descripción.
+        $termino = $request->query('buscar', $request->query('search'));
+
+        if (filled($termino)) {
+            $search = mb_strtolower(trim($termino));
+            $like = "%{$search}%";
+
+            $query->where(function (Builder $subQuery) use ($like) {
+                $subQuery
+                    ->whereRaw('LOWER(titulo) LIKE ?', [$like])
+                    ->orWhereRaw('LOWER(descripcion) LIKE ?', [$like]);
+            });
+        }
+
+        // Ordenar y paginar.
+        $publicaciones = $query
+            ->orderByDesc('fecha_publicacion')
+            ->orderByDesc('id_publicacion')
+            ->paginate(15)
+            ->withQueryString();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Publicaciones obtenidas correctamente.',
+            'data' => PublicacionResource::collection(
+                $publicaciones->items()
+            ),
+            'meta' => [
+                'current_page' => $publicaciones->currentPage(),
+                'last_page' => $publicaciones->lastPage(),
+                'per_page' => $publicaciones->perPage(),
+                'total' => $publicaciones->total(),
+                'total_ocultas' => $totalOcultas,
+            ],
+        ]);
+    }
+
     /**
      * POST
      * /contrataciones/{id_contratacion}/publicacion
@@ -81,17 +160,13 @@ class PublicacionController extends Controller
         $datos = $request->validated();
 
         $publicacion = Publicacion::create([
-            'id_contratacion' =>
-            $contratacion->id_contratacion,
+            'id_contratacion' => $contratacion->id_contratacion,
 
-            'id_tipo_publicacion' =>
-            $datos['id_tipo_publicacion'],
+            'id_tipo_publicacion' => $datos['id_tipo_publicacion'],
 
-            'titulo' =>
-            $datos['titulo'],
+            'titulo' => $datos['titulo'],
 
-            'descripcion' =>
-            $datos['descripcion'],
+            'descripcion' => $datos['descripcion'],
 
             'visible' => true,
 
@@ -107,10 +182,8 @@ class PublicacionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' =>
-            'Publicación creada correctamente.',
-            'data' =>
-            new PublicacionResource(
+            'message' => 'Publicación creada correctamente.',
+            'data' => new PublicacionResource(
                 $publicacion
             ),
         ], 201);
@@ -191,10 +264,8 @@ class PublicacionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' =>
-            'Publicación obtenida correctamente.',
-            'data' =>
-            new PublicacionResource(
+            'message' => 'Publicación obtenida correctamente.',
+            'data' => new PublicacionResource(
                 $publicacion
             ),
         ]);
@@ -257,10 +328,8 @@ class PublicacionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' =>
-            'Publicación actualizada correctamente.',
-            'data' =>
-            new PublicacionResource(
+            'message' => 'Publicación actualizada correctamente.',
+            'data' => new PublicacionResource(
                 $publicacion
             ),
         ]);
@@ -286,9 +355,18 @@ class PublicacionController extends Controller
             );
         }
 
-        $publicacion = Publicacion::find(
-            $id_publicacion
-        );
+        $datos = $request->validate([
+            'motivo' => [
+                'required',
+                'string',
+                'min:5',
+                'max:1000',
+            ],
+        ]);
+
+        $publicacion = Publicacion::query()
+            ->with('contratacion.trabajador')
+            ->find($id_publicacion);
 
         if (! $publicacion) {
             return $this->error(
@@ -306,19 +384,82 @@ class PublicacionController extends Controller
             );
         }
 
+        $idUsuario = $publicacion
+            ->contratacion
+            ?->trabajador
+            ?->id_usuario;
+
         $publicacion->update([
             'visible' => false,
         ]);
 
+        if ($idUsuario) {
+            app(NotificacionService::class)->crear(
+                (int) $idUsuario,
+                'PUBLICACION',
+                'Tu publicación ha sido ocultada',
+                'Tu publicación "'.$publicacion->titulo
+                    .'" fue ocultada por un administrador. Motivo: '
+                    .$datos['motivo']
+            );
+        }
+
         return response()->json([
             'success' => true,
-            'message' =>
-            'Publicación ocultada correctamente.',
+            'message' => 'Publicación ocultada correctamente.',
             'data' => [
-                'id_publicacion' =>
-                $publicacion->id_publicacion,
-
+                'id_publicacion' => $publicacion->id_publicacion,
                 'visible' => false,
+            ],
+        ]);
+    }
+
+    /**
+     * PATCH
+     * /admin/publicaciones/{id_publicacion}/mostrar
+     */
+    public function mostrar(
+        Request $request,
+        int $id_publicacion
+    ): JsonResponse {
+
+        if (! (bool) $request->user()->es_administrador) {
+            return $this->error(
+                'Acción reservada para administradores.',
+                'ADMIN_REQUIRED',
+                403
+            );
+        }
+
+        $publicacion = Publicacion::query()
+            ->find($id_publicacion);
+
+        if (! $publicacion) {
+            return $this->error(
+                'Publicación no encontrada.',
+                'PUBLICATION_NOT_FOUND',
+                404
+            );
+        }
+
+        if ($publicacion->visible) {
+            return $this->error(
+                'La publicación ya se encuentra visible.',
+                'PUBLICATION_ALREADY_VISIBLE',
+                409
+            );
+        }
+
+        $publicacion->update([
+            'visible' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Publicación mostrada correctamente.',
+            'data' => [
+                'id_publicacion' => $publicacion->id_publicacion,
+                'visible' => true,
             ],
         ]);
     }
@@ -360,10 +501,8 @@ class PublicacionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' =>
-            'Publicaciones obtenidas correctamente.',
-            'data' =>
-            PublicacionResource::collection(
+            'message' => 'Publicaciones obtenidas correctamente.',
+            'data' => PublicacionResource::collection(
                 $publicaciones
             ),
         ]);
@@ -406,10 +545,8 @@ class PublicacionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' =>
-            'Publicaciones obtenidas correctamente.',
-            'data' =>
-            PublicacionResource::collection(
+            'message' => 'Publicaciones obtenidas correctamente.',
+            'data' => PublicacionResource::collection(
                 $publicaciones
             ),
         ]);

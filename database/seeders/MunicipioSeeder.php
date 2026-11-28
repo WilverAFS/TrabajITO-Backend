@@ -71,12 +71,14 @@ class MunicipioSeeder extends Seeder
          * Sincroniza la secuencia autoincremental de PostgreSQL
          * después de insertar identificadores explícitos.
          */
-        DB::statement("
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("
             SELECT setval(
                 pg_get_serial_sequence('municipios', 'id_municipio'),
                 COALESCE((SELECT MAX(id_municipio) FROM municipios), 1),
                 true
             );
         ");
+        }
     }
 }

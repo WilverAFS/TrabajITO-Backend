@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('reportes', function (Blueprint $table) {
             $table->id('id_reporte');
 
-            //Usuario que genera el reporte
+            // Usuario que genera el reporte
             $table->foreignId('id_denunciante')
                 ->constrained(
                     table: 'users',
@@ -23,7 +23,7 @@ return new class extends Migration
                 )
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            
+
             /**
              * Valores admitidos
              * PUBLICACION
@@ -33,13 +33,13 @@ return new class extends Migration
 
             /**
              * Identificador de la publicacion o perfil.
-             * 
+             *
              * No puede tener una clave foranea convencional
              * porque puede apunta a dos tablas diferentes.
              */
             $table->unsignedBigInteger('id_objetivo');
 
-            //Administrador encargado de eresolver el reporte
+            // Administrador encargado de eresolver el reporte
             $table->foreignId('id_admin_moderador')
                 ->nullable()
                 ->constrained(
@@ -48,7 +48,7 @@ return new class extends Migration
                 )
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
-            
+
             $table->string('motivo', 150);
             $table->text('descripcion');
 
@@ -58,7 +58,7 @@ return new class extends Migration
                 ->on('estados_reporte')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            
+
             $table->text('resolucion')->nullable();
             $table->timestamp('fecha_creacion')->useCurrent();
             $table->timestamp('fecha_resolucion')->nullable();
@@ -72,23 +72,25 @@ return new class extends Migration
                 'id_admin_moderador',
                 'reportes_admin_index'
             );
-            
+
         });
 
-        DB::statement(
-            "ALTER TABLE reportes
-            ADD CONSTRAINT reportes_tipo_objetivo_check
-            CHECK (tipo_objetivo IN ('PUBLICACION', 'PERFIL'))"
-        );
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement(
+                "ALTER TABLE reportes
+                ADD CONSTRAINT reportes_tipo_objetivo_check
+                CHECK (tipo_objetivo IN ('PUBLICACION', 'PERFIL'))"
+            );
 
-        DB::statement(
-            'ALTER TABLE reportes
-            ADD CONSTRAINT reportes_fechas_check
-            CHECK (
-                fecha_resolucion IS NULL
-                OR fecha_resolucion >= fecha_creacion
-            )'
-        );
+            DB::statement(
+                'ALTER TABLE reportes
+                ADD CONSTRAINT reportes_fechas_check
+                CHECK (
+                    fecha_resolucion IS NULL
+                    OR fecha_resolucion >= fecha_creacion
+                )'
+            );
+        }
     }
 
     /**

@@ -37,8 +37,8 @@ class SolicitudHabilitacionApiTest extends TestCase
         return User::create([
             'nombre' => 'Usuario',
             'apellido' => 'Prueba',
-            'correo' => 'solicitud.' .
-                bin2hex(random_bytes(6)) . '@example.test',
+            'correo' => 'solicitud.'.
+                bin2hex(random_bytes(6)).'@example.test',
             'telefono' => null,
             'contrasena_hash' => 'Prueba123!',
         ]);
@@ -51,13 +51,13 @@ class SolicitudHabilitacionApiTest extends TestCase
         $sufijo = bin2hex(random_bytes(4));
 
         $estado = Estado::create([
-            'estado' => 'Estado ' . $sufijo,
+            'estado' => 'Estado '.$sufijo,
             'activo' => true,
         ]);
 
         $municipio = Municipio::create([
             'id_estado' => $estado->id_estado,
-            'municipio' => 'Municipio ' . $sufijo,
+            'municipio' => 'Municipio '.$sufijo,
             'activo' => true,
         ]);
 
@@ -100,6 +100,24 @@ class SolicitudHabilitacionApiTest extends TestCase
 
         $this->getJson(self::URL)
             ->assertUnauthorized();
+    }
+
+    // Un administrador no puede solicitar su propia habilitación.
+    public function test_administrador_no_puede_solicitar_habilitacion(): void
+    {
+        $administrador = $this->crearUsuario();
+        $administrador->es_administrador = true;
+        $administrador->save();
+
+        $this->withToken($this->token($administrador))
+            ->postJson(self::URL, [])
+            ->assertForbidden()
+            ->assertJsonPath(
+                'error_code',
+                'ADMIN_HABILITATION_REQUEST_FORBIDDEN'
+            );
+
+        $this->assertDatabaseCount('solicitudes_habilitacion', 0);
     }
 
     // 2. El usuario debe tener perfil profesional.

@@ -35,12 +35,14 @@ class EstadoReporteSeeder extends Seeder
          * Sincroniza la secuencia autoincremental de PostgreSQL
          * después de insertar identificadores explícitos.
          */
-        DB::statement("
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("
             SELECT setval(
                 pg_get_serial_sequence('estados_reporte', 'id_estado_reporte'),
                 COALESCE((SELECT MAX(id_estado_reporte) FROM estados_reporte), 1),
                 true
             );
         ");
+        }
     }
 }

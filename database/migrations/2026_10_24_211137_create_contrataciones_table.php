@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -14,8 +14,8 @@ return new class extends Migration
     {
         Schema::create('contrataciones', function (Blueprint $table) {
             $table->id('id_contratacion');
-            
-            //Usuario que solicita el servicio
+
+            // Usuario que solicita el servicio
             $table->foreignId('id_cliente')
                 ->constrained(
                     table: 'users',
@@ -23,8 +23,8 @@ return new class extends Migration
                 )
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            
-            //Perfil profesional que recibe la solicitud
+
+            // Perfil profesional que recibe la solicitud
             $table->foreignId('id_trabajador')
                 ->constrained(
                     table: 'perfiles_profesionales',
@@ -32,8 +32,8 @@ return new class extends Migration
                 )
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            
-            //El catalogo utiliza smallint como PK
+
+            // El catálogo utiliza smallint como PK
             $table->smallInteger('id_estado_contratacion');
 
             $table->foreign('id_estado_contratacion')
@@ -44,11 +44,11 @@ return new class extends Migration
 
             $table->text('descripcion_servicio');
             $table->timestamp('fecha_solicitud')->useCurrent();
-            
-            //Fecha en la que el trabajador acepta o rechaza
+
+            // Fecha en la que el trabajador acepta o rechaza
             $table->timestamp('fecha_respuesta')->nullable();
 
-            //Solo re registra cuando el trabajo se completa
+            // Solo se registra cuando el trabajo se completa
             $table->timestamp('fecha_finalizacion')->nullable();
 
             $table->index(
@@ -65,37 +65,32 @@ return new class extends Migration
                 ['id_estado_contratacion', 'fecha_solicitud'],
                 'contrataciones_estado_fecha_index'
             );
-
         });
 
         /**
-         * Un usuario no puede contratarse a si mismo.
-         * 
-         * id_cliente referenci users e id_trabajador referencia
-         * perfiles_profesionales, por lo que esta regla no puede 
-         * comprobarse mediante un CHECK sencillo.
-         * 
-         * Se validara despues en la logica de negocio de Laravel.
+         * Un usuario no puede contratarse a sí mismo.
+         *
+         * Esta regla se valida en la lógica de negocio de Laravel.
          */
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement(
+                'ALTER TABLE contrataciones
+                ADD CONSTRAINT contrataciones_fecha_check
+                CHECK (
+                    fecha_finalizacion IS NULL
+                    OR fecha_finalizacion >= fecha_solicitud
+                )'
+            );
 
-        DB::statement(
-            'ALTER TABLE contrataciones
-            ADD CONSTRAINT contrataciones_fecha_check
-            CHECK (
-                fecha_finalizacion IS NULL
-                OR fecha_finalizacion >= fecha_solicitud
-            )'
-        );
-
-        DB::statement(
-            'ALTER TABLE contrataciones
-            ADD CONSTRAINT contrataciones_respuesta_check
-            CHECK (
-                fecha_respuesta IS NULL
-                OR fecha_respuesta >= fecha_solicitud
-            )'
-        );
-
+            DB::statement(
+                'ALTER TABLE contrataciones
+                ADD CONSTRAINT contrataciones_respuesta_check
+                CHECK (
+                    fecha_respuesta IS NULL
+                    OR fecha_respuesta >= fecha_solicitud
+                )'
+            );
+        }
     }
 
     /**

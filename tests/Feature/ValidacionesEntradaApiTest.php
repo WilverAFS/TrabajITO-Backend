@@ -24,7 +24,7 @@ class ValidacionesEntradaApiTest extends TestCase
         $usuario = User::create([
             'nombre' => 'Usuario',
             'apellido' => 'Prueba',
-            'correo' => 'validacion.' . bin2hex(random_bytes(6)) . '@example.test',
+            'correo' => 'validacion.'.bin2hex(random_bytes(6)).'@example.test',
             'telefono' => null,
             'contrasena_hash' => $password,
         ]);
@@ -66,7 +66,7 @@ class ValidacionesEntradaApiTest extends TestCase
 
     public function test_registro_rechaza_nombres_con_numeros(): void
     {
-        $correo = 'nombre.' . bin2hex(random_bytes(5)) . '@example.test';
+        $correo = 'nombre.'.bin2hex(random_bytes(5)).'@example.test';
 
         $this->postJson('/api/v1/auth/register', [
             'nombre' => 'Marvin123',
@@ -82,7 +82,7 @@ class ValidacionesEntradaApiTest extends TestCase
 
     public function test_registro_rechaza_simbolos_en_nombres(): void
     {
-        $correo = 'simbolo.' . bin2hex(random_bytes(5)) . '@example.test';
+        $correo = 'simbolo.'.bin2hex(random_bytes(5)).'@example.test';
 
         $this->postJson('/api/v1/auth/register', [
             'nombre' => 'María-José',
@@ -119,7 +119,7 @@ class ValidacionesEntradaApiTest extends TestCase
 
     public function test_registro_acepta_acentos_y_espacios(): void
     {
-        $correo = 'acentos.' . bin2hex(random_bytes(5)) . '@example.test';
+        $correo = 'acentos.'.bin2hex(random_bytes(5)).'@example.test';
 
         $this->postJson('/api/v1/auth/register', [
             'nombre' => 'José María',
@@ -140,7 +140,7 @@ class ValidacionesEntradaApiTest extends TestCase
 
     public function test_registro_rechaza_contrasena_sin_complejidad(): void
     {
-        $correo = 'password.' . bin2hex(random_bytes(5)) . '@example.test';
+        $correo = 'password.'.bin2hex(random_bytes(5)).'@example.test';
 
         $this->postJson('/api/v1/auth/register', [
             'nombre' => 'María',
@@ -152,6 +152,23 @@ class ValidacionesEntradaApiTest extends TestCase
             ->assertJsonValidationErrors(['password']);
 
         $this->assertDatabaseMissing('users', ['correo' => $correo]);
+    }
+
+    public function test_registro_acepta_contrasena_con_mayusculas_acentuadas(): void
+    {
+        $correo = 'password.acento.'.bin2hex(random_bytes(5)).'@example.test';
+
+        $this->postJson('/api/v1/auth/register', [
+            'nombre' => 'Maria',
+            'apellido' => 'Lopez',
+            'correo' => $correo,
+            'password' => 'Ábcdefg1!',
+            'password_confirmation' => 'Ábcdefg1!',
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('users', [
+            'correo' => $correo,
+        ]);
     }
 
     public function test_login_permite_contrasena_heredada_debil_y_asigna_dispositivo_predeterminado(): void
@@ -277,7 +294,7 @@ class ValidacionesEntradaApiTest extends TestCase
         ]);
 
         $this->withToken($this->token($admin))
-            ->patchJson('/api/v1/admin/oficios/' . $oficio->id_oficio, [
+            ->patchJson('/api/v1/admin/oficios/'.$oficio->id_oficio, [
                 'nombre' => 'Carpintería2',
             ])->assertUnprocessable()
             ->assertJsonValidationErrors(['nombre']);

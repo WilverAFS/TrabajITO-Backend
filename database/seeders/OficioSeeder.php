@@ -71,12 +71,14 @@ class OficioSeeder extends Seeder
          * Sincroniza la secuencia autoincremental de PostgreSQL
          * después de insertar identificadores explícitos.
          */
-        DB::statement("
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("
             SELECT setval(
                 pg_get_serial_sequence('oficios', 'id_oficio'),
                 COALESCE((SELECT MAX(id_oficio) FROM oficios), 1),
                 true
             );
         ");
+        }
     }
 }

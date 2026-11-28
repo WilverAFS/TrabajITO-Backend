@@ -230,6 +230,9 @@ class PerfilProfesionalSeeder extends Seeder
         string $tabla,
         string $columna
     ): void {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
         DB::statement("
             SELECT setval(
                 pg_get_serial_sequence('{$tabla}', '{$columna}'),

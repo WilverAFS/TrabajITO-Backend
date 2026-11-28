@@ -43,12 +43,14 @@ class TipoPublicacionSeeder extends Seeder
          * Sincroniza la secuencia autoincremental de PostgreSQL
          * después de insertar identificadores explícitos.
          */
-        DB::statement("
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("
             SELECT setval(
                 pg_get_serial_sequence('tipos_publicacion', 'id_tipo_publicacion'),
                 COALESCE((SELECT MAX(id_tipo_publicacion) FROM tipos_publicacion), 1),
                 true
             );
         ");
+        }
     }
 }

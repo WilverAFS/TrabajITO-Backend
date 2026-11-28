@@ -45,7 +45,7 @@ class AdminUsuarioController extends Controller
         ]);
 
         if (! empty($filtros['buscar'])) {
-            $patron = '%' . strtolower(trim($filtros['buscar'])) . '%';
+            $patron = '%'.strtolower(trim($filtros['buscar'])).'%';
 
             $consulta->where(function ($query) use ($patron) {
                 $query
@@ -151,7 +151,36 @@ class AdminUsuarioController extends Controller
             );
         }
 
-        DB::transaction(function () use ($usuario): void {
+        // Evitar que un administrador suspenda su propia cuenta.
+        if ((int) $request->user()->getKey() === (int) $usuario->getKey()) {
+            return $this->error(
+                'No puedes suspender tu propia cuenta.',
+                'SELF_SUSPENSION_FORBIDDEN',
+                403
+            );
+        }
+
+        $respuesta = DB::transaction(function () use ($usuario): ?JsonResponse {
+            // Bloquear los administradores activos durante la operación.
+            $administradoresActivos = User::query()
+                ->where('es_administrador', true)
+                ->where('activo', true)
+                ->lockForUpdate()
+                ->get();
+
+            // Impedir que se suspenda al último administrador activo.
+            if (
+                $usuario->es_administrador
+                && $usuario->activo
+                && $administradoresActivos->count() <= 2
+            ) {
+                return $this->error(
+                    'No puedes suspender al último administrador activo.',
+                    'LAST_ADMIN_SUSPENSION_FORBIDDEN',
+                    403
+                );
+            }
+
             $usuario->activo = false;
             $usuario->save();
 
@@ -162,7 +191,13 @@ class AdminUsuarioController extends Controller
 
             // Revocar todos los tokens, incluidos los de otros dispositivos.
             $usuario->tokens()->delete();
+
+            return null;
         });
+
+        if ($respuesta !== null) {
+            return $respuesta;
+        }
 
         $usuario->refresh();
 

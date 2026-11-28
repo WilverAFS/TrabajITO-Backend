@@ -43,12 +43,14 @@ class TipoNotificacionSeeder extends Seeder
          * Sincroniza la secuencia autoincremental de PostgreSQL
          * después de insertar identificadores explícitos.
          */
-        DB::statement("
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("
             SELECT setval(
                 pg_get_serial_sequence('tipos_notificacion', 'id_tipo_notificacion'),
                 COALESCE((SELECT MAX(id_tipo_notificacion) FROM tipos_notificacion), 1),
                 true
             );
         ");
+        }
     }
 }
